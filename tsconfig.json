@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "out": "www/js/app.js",
+    "outDir": "www/js",
+    "sourceMap": true
+  },
+  "include": [
+    "tsDefinitions/phaser.d.ts",
+    "app.ts",
+    "game/**/*.ts"
+  ]
+}
