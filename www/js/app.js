@@ -8,6 +8,61 @@ window.onload = function () {
 };
 var VirusGame;
 (function (VirusGame) {
+    var CellState;
+    (function (CellState) {
+        CellState[CellState["Empty"] = 0] = "Empty";
+        CellState[CellState["Alive"] = 1] = "Alive";
+        CellState[CellState["Dead"] = 2] = "Dead";
+    })(CellState || (CellState = {}));
+    ;
+    var BoardCell = (function () {
+        function BoardCell(game, x, y, board) {
+            this.state = 0;
+            this.image = game.add.image(x * 38, y * 36, 'board_cells', 'grey_box', board);
+        }
+        return BoardCell;
+    }());
+    VirusGame.BoardCell = BoardCell;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    var BoardGame = (function (_super) {
+        __extends(BoardGame, _super);
+        function BoardGame() {
+            _super.apply(this, arguments);
+            this.number_of_players = 2;
+        }
+        BoardGame.prototype.create = function () {
+            this.drawBoard();
+        };
+        BoardGame.prototype.drawBoard = function () {
+            this.board = this.add.group();
+            this.board.x = this.world.centerX;
+            this.board.y = this.world.centerY;
+            for (var i = 0; i < 10; i++) {
+                for (var j = 0; j < 10; j++) {
+                    this.addCell(i, j);
+                }
+            }
+        };
+        BoardGame.prototype.addCell = function (x, y) {
+            var cell = new VirusGame.BoardCell(this.game, x, y, this.board);
+        };
+        return BoardGame;
+    }(Phaser.State));
+    VirusGame.BoardGame = BoardGame;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    var BoardPlayer = (function () {
+        function BoardPlayer() {
+        }
+        return BoardPlayer;
+    }());
+    VirusGame.BoardPlayer = BoardPlayer;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
     var Boot = (function (_super) {
         __extends(Boot, _super);
         function Boot() {
@@ -34,29 +89,12 @@ var VirusGame;
             this.state.add('Boot', VirusGame.Boot, false);
             this.state.add('Preloader', VirusGame.Preloader, false);
             this.state.add('MainMenu', VirusGame.MainMenu, false);
-            this.state.add('Level1', VirusGame.Level1, false);
+            this.state.add('BoardGame', VirusGame.BoardGame, false);
             this.state.start('Boot');
         }
         return Game;
     }(Phaser.Game));
     VirusGame.Game = Game;
-})(VirusGame || (VirusGame = {}));
-var VirusGame;
-(function (VirusGame) {
-    var Level1 = (function (_super) {
-        __extends(Level1, _super);
-        function Level1() {
-            _super.apply(this, arguments);
-        }
-        Level1.prototype.create = function () {
-            this.background = this.add.sprite(0, 0, 'level1');
-            this.music = this.add.audio('music', 1, false);
-            this.music.play();
-            this.player = new VirusGame.Player(this.game, 130, 284);
-        };
-        return Level1;
-    }(Phaser.State));
-    VirusGame.Level1 = Level1;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
@@ -66,59 +104,27 @@ var VirusGame;
             _super.apply(this, arguments);
         }
         MainMenu.prototype.create = function () {
-            this.background = this.add.sprite(0, 0, 'titlepage');
-            this.background.alpha = 0;
-            this.logo = this.add.sprite(this.world.centerX, -300, 'logo');
-            this.logo.anchor.setTo(0.5, 0.5);
-            this.add.tween(this.background).to({ alpha: 1 }, 2000, Phaser.Easing.Bounce.InOut, true);
-            this.add.tween(this.logo).to({ y: 220 }, 2000, Phaser.Easing.Elastic.Out, true, 2000);
-            this.input.onDown.addOnce(this.fadeOut, this);
-        };
-        MainMenu.prototype.fadeOut = function () {
-            this.add.tween(this.background).to({ alpha: 0 }, 2000, Phaser.Easing.Linear.None, true);
-            var tween = this.add.tween(this.logo).to({ y: 800 }, 2000, Phaser.Easing.Linear.None, true);
-            tween.onComplete.add(this.startGame, this);
+            this.logo = this.add.text(this.world.centerX, 100, 'VIRUS', {
+                "fill": "#2ba6b7",
+                "font": "bold 60px Arial"
+            });
+            this.logo.anchor.set(0.5, 0.5);
+            this.button = this.add.button(this.world.centerX, 200, 'ui', this.startGame, this, 'blue_button01', 'blue_button03', 'blue_button05');
+            this.button.anchor.set(0.5, 0.5);
+            this.button_text = this.add.text(0, 0, 'Start game', {
+                "fill": "#fefefe",
+                "font": "bold 24px Arial",
+                "stroke": "#000000",
+                "strokeThickness": 2
+            });
+            this.button_text.alignIn(this.button, Phaser.CENTER);
         };
         MainMenu.prototype.startGame = function () {
-            this.game.state.start('Level1', true, false);
+            this.game.state.start('BoardGame', true, false);
         };
         return MainMenu;
     }(Phaser.State));
     VirusGame.MainMenu = MainMenu;
-})(VirusGame || (VirusGame = {}));
-var VirusGame;
-(function (VirusGame) {
-    var Player = (function (_super) {
-        __extends(Player, _super);
-        function Player(game, x, y) {
-            _super.call(this, game, x, y, 'simon', 0);
-            this.anchor.setTo(0.5, 0);
-            this.animations.add('walk', [0, 1, 2, 3, 4], 10, true);
-            game.add.existing(this);
-        }
-        Player.prototype.update = function () {
-            this.body.velocity.x = 0;
-            if (this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
-                this.body.velocity.x = -150;
-                this.animations.play('walk');
-                if (this.scale.x == 1) {
-                    this.scale.x = -1;
-                }
-            }
-            else if (this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
-                this.body.velocity.x = 150;
-                this.animations.play('walk');
-                if (this.scale.x == -1) {
-                    this.scale.x = 1;
-                }
-            }
-            else {
-                this.animations.frame = 0;
-            }
-        };
-        return Player;
-    }(Phaser.Sprite));
-    VirusGame.Player = Player;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
@@ -130,14 +136,11 @@ var VirusGame;
         Preloader.prototype.preload = function () {
             this.preloadBar = this.add.sprite(200, 250, 'preloadBar');
             this.load.setPreloadSprite(this.preloadBar);
-            this.load.image('titlepage', 'assets/titlepage.jpg');
-            this.load.image('logo', 'assets/logo.png');
-            this.load.audio('music', 'assets/title.mp3', true);
-            this.load.spritesheet('simon', 'assets/simon.png', 58, 96, 5);
-            this.load.image('level1', 'assets/level1.png');
+            this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
+            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
         };
         Preloader.prototype.create = function () {
-            var tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
+            var tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 100, Phaser.Easing.Linear.None, true);
             tween.onComplete.add(this.startMainMenu, this);
         };
         Preloader.prototype.startMainMenu = function () {
