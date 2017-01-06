@@ -26,4 +26,4 @@ module VirusGame {
             let cell = new BoardCell(this.game, x,y, this.board);
         }
     }
-} git rm --cached -r .idea
+}

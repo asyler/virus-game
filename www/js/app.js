@@ -52,9 +52,6 @@ var VirusGame;
     }(Phaser.State));
     VirusGame.BoardGame = BoardGame;
 })(VirusGame || (VirusGame = {}));
-git;
-rm--;
-cached - r.idea;
 var VirusGame;
 (function (VirusGame) {
     var BoardPlayer = (function () {
