@@ -150,4 +150,3 @@ var VirusGame;
     }(Phaser.State));
     VirusGame.Preloader = Preloader;
 })(VirusGame || (VirusGame = {}));
-//# sourceMappingURL=app.js.map
