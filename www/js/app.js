@@ -1,10 +1,5 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-window.onload = function () {
-    var game = new VirusGame.Game();
+window.onload = () => {
+    let game = new VirusGame.Game();
 };
 var VirusGame;
 (function (VirusGame) {
@@ -15,95 +10,125 @@ var VirusGame;
         CellState[CellState["Dead"] = 2] = "Dead";
     })(CellState || (CellState = {}));
     ;
-    var BoardCell = (function () {
-        function BoardCell(game, x, y, board) {
+    class BoardCell {
+        constructor(game, x, y, board_game) {
             this.state = 0;
-            this.image = game.add.image(x * 38, y * 36, 'board_cells', 'grey_box', board);
+            let image = game.add.image(0, 0, 'board_cells', 'grey_box', board_game.board);
+            this.image = image;
+            image.inputEnabled = true;
+            image.input.useHandCursor = true;
+            image.events.onInputOver.add(function () {
+                image.tint = 0xaaaaaa;
+            });
+            image.events.onInputOut.add(function () {
+                image.tint = 0xffffff;
+            });
+            image.events.onInputUp.add(function () {
+                switch (this.state) {
+                    case 0:
+                        this.image.frameName = board_game.current_player_color + '_boxCross';
+                        this.state = 1;
+                        board_game.endTurn();
+                        break;
+                    case 1:
+                        this.image.frameName = board_game.current_player_color + '_boxCheckmark';
+                        this.state = 2;
+                        board_game.endTurn();
+                        break;
+                    case 2:
+                        break;
+                }
+            }, this);
         }
-        return BoardCell;
-    }());
+    }
     VirusGame.BoardCell = BoardCell;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var BoardGame = (function (_super) {
-        __extends(BoardGame, _super);
-        function BoardGame() {
-            _super.apply(this, arguments);
+    class BoardGame extends Phaser.State {
+        constructor(...args) {
+            super(...args);
             this.number_of_players = 2;
+            this.colors = ['blue', 'yellow'];
         }
-        BoardGame.prototype.create = function () {
+        create() {
             this.drawBoard();
-        };
-        BoardGame.prototype.drawBoard = function () {
+            this.addPlayers();
+            this.initGame();
+        }
+        drawBoard() {
             this.board = this.add.group();
-            this.board.x = this.world.centerX;
-            this.board.y = this.world.centerY;
-            for (var i = 0; i < 10; i++) {
-                for (var j = 0; j < 10; j++) {
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
                     this.addCell(i, j);
                 }
             }
-        };
-        BoardGame.prototype.addCell = function (x, y) {
-            var cell = new VirusGame.BoardCell(this.game, x, y, this.board);
-        };
-        return BoardGame;
-    }(Phaser.State));
+            this.board.align(10, 10, 38, 36);
+            this.board.alignIn(this.world.bounds, Phaser.CENTER);
+        }
+        addCell(x, y) {
+            let cell = new VirusGame.BoardCell(this.game, x, y, this);
+        }
+        addPlayers() {
+            this.players = [];
+            for (let i = 0; i < this.number_of_players; i++) {
+                this.players.push(new VirusGame.BoardPlayer(this.colors[i]));
+            }
+        }
+        initGame() {
+            this.current_player_number = 0;
+            this.left_turn_cells = 3;
+        }
+        get current_player_color() {
+            return this.players[this.current_player_number].color;
+        }
+        endTurn() {
+            this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
+        }
+    }
     VirusGame.BoardGame = BoardGame;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var BoardPlayer = (function () {
-        function BoardPlayer() {
+    class BoardPlayer {
+        constructor(color) {
+            this.color = color;
         }
-        return BoardPlayer;
-    }());
+    }
     VirusGame.BoardPlayer = BoardPlayer;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var Boot = (function (_super) {
-        __extends(Boot, _super);
-        function Boot() {
-            _super.apply(this, arguments);
-        }
-        Boot.prototype.preload = function () {
+    class Boot extends Phaser.State {
+        preload() {
             this.load.image('preloadBar', 'assets/loader.png');
-        };
-        Boot.prototype.create = function () {
+        }
+        create() {
             this.input.maxPointers = 1;
             this.stage.disableVisibilityChange = true;
             this.game.state.start('Preloader', true, false);
-        };
-        return Boot;
-    }(Phaser.State));
+        }
+    }
     VirusGame.Boot = Boot;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var Game = (function (_super) {
-        __extends(Game, _super);
-        function Game() {
-            _super.call(this, 800, 600, Phaser.AUTO, 'content', null);
+    class Game extends Phaser.Game {
+        constructor() {
+            super(800, 600, Phaser.AUTO, 'content', null);
             this.state.add('Boot', VirusGame.Boot, false);
             this.state.add('Preloader', VirusGame.Preloader, false);
             this.state.add('MainMenu', VirusGame.MainMenu, false);
             this.state.add('BoardGame', VirusGame.BoardGame, false);
             this.state.start('Boot');
         }
-        return Game;
-    }(Phaser.Game));
+    }
     VirusGame.Game = Game;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var MainMenu = (function (_super) {
-        __extends(MainMenu, _super);
-        function MainMenu() {
-            _super.apply(this, arguments);
-        }
-        MainMenu.prototype.create = function () {
+    class MainMenu extends Phaser.State {
+        create() {
             this.logo = this.add.text(this.world.centerX, 100, 'VIRUS', {
                 "fill": "#2ba6b7",
                 "font": "bold 60px Arial"
@@ -118,35 +143,31 @@ var VirusGame;
                 "strokeThickness": 2
             });
             this.button_text.alignIn(this.button, Phaser.CENTER);
-        };
-        MainMenu.prototype.startGame = function () {
+            this.startGame();
+        }
+        startGame() {
             this.game.state.start('BoardGame', true, false);
-        };
-        return MainMenu;
-    }(Phaser.State));
+        }
+    }
     VirusGame.MainMenu = MainMenu;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    var Preloader = (function (_super) {
-        __extends(Preloader, _super);
-        function Preloader() {
-            _super.apply(this, arguments);
-        }
-        Preloader.prototype.preload = function () {
+    class Preloader extends Phaser.State {
+        preload() {
             this.preloadBar = this.add.sprite(200, 250, 'preloadBar');
             this.load.setPreloadSprite(this.preloadBar);
             this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
             this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
-        };
-        Preloader.prototype.create = function () {
-            var tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 100, Phaser.Easing.Linear.None, true);
+        }
+        create() {
+            let tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 100, Phaser.Easing.Linear.None, true);
             tween.onComplete.add(this.startMainMenu, this);
-        };
-        Preloader.prototype.startMainMenu = function () {
+        }
+        startMainMenu() {
             this.game.state.start('MainMenu', true, false);
-        };
-        return Preloader;
-    }(Phaser.State));
+        }
+    }
     VirusGame.Preloader = Preloader;
 })(VirusGame || (VirusGame = {}));
+//# sourceMappingURL=app.js.map

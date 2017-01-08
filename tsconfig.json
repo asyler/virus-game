@@ -4,7 +4,10 @@
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "out": "www/js/app.js"
+    "target": "es6",
+    "out": "www/js/app.js",
+    "outDir": "www/js",
+    "sourceMap": true
   },
   "include": [
     "tsDefinitions/phaser.d.ts",

@@ -1,3 +1,4 @@
 .idea/*
 game/*.js
 game/*.js.map
+www/js/*.js.map

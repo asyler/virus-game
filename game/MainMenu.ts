@@ -24,12 +24,12 @@ module VirusGame {
                 "strokeThickness": 2
             });
             this.button_text.alignIn(this.button,Phaser.CENTER);
+
+            this.startGame(); // debug
         }
 
         startGame() {
-
             this.game.state.start('BoardGame', true, false);
-
         }
 
     }
