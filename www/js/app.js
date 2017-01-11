@@ -46,8 +46,8 @@ var VirusGame;
 var VirusGame;
 (function (VirusGame) {
     class BoardGame extends Phaser.State {
-        constructor(...args) {
-            super(...args);
+        constructor() {
+            super(...arguments);
             this.number_of_players = 2;
             this.colors = ['blue', 'yellow'];
         }
