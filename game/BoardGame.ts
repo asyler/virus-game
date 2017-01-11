@@ -7,13 +7,30 @@ module VirusGame {
 
         board: Phaser.Group;
         players: Array<BoardPlayer>;
+        info: Phaser.Text;
 
         colors: Array<string> = ['blue','yellow'];
 
         create() {
-            this.drawBoard();
             this.addPlayers();
             this.initGame();
+            this.drawBoard();
+            this.drawInfo();
+        }
+
+        private drawInfo() {
+            this.info = this.add.text(this.world.centerX,10,null,null);
+            this.info.anchor.set(0.5,0);
+            this.setInfo();
+        }
+
+        private setInfo() {
+            var str = "Turn of " + this.current_player_color + " player";
+            this.info.setText(str);
+            this.info.setStyle({
+                "fill":this.current_player_color,
+                "font":"bold 40px Arial"
+            });
         }
 
         private drawBoard() {
@@ -50,6 +67,7 @@ module VirusGame {
 
         endTurn() {
             this.current_player_number = (this.current_player_number+1)%this.number_of_players;
+            this.setInfo();
         }
     }
 }

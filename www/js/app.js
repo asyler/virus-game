@@ -52,9 +52,23 @@ var VirusGame;
             this.colors = ['blue', 'yellow'];
         }
         create() {
-            this.drawBoard();
             this.addPlayers();
             this.initGame();
+            this.drawBoard();
+            this.drawInfo();
+        }
+        drawInfo() {
+            this.info = this.add.text(this.world.centerX, 10, null, null);
+            this.info.anchor.set(0.5, 0);
+            this.setInfo();
+        }
+        setInfo() {
+            var str = "Turn of " + this.current_player_color + " player";
+            this.info.setText(str);
+            this.info.setStyle({
+                "fill": this.current_player_color,
+                "font": "bold 40px Arial"
+            });
         }
         drawBoard() {
             this.board = this.add.group();
@@ -84,6 +98,7 @@ var VirusGame;
         }
         endTurn() {
             this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
+            this.setInfo();
         }
     }
     VirusGame.BoardGame = BoardGame;
