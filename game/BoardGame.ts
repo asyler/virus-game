@@ -7,7 +7,7 @@ module VirusGame {
 
         board: Phaser.Group;
         players: Array<BoardPlayer>;
-        info: Phaser.Text;
+        info: Info;
 
         colors: Array<string> = ['blue','yellow'];
 
@@ -19,18 +19,8 @@ module VirusGame {
         }
 
         private drawInfo() {
-            this.info = this.add.text(this.world.centerX,10,null,null);
-            this.info.anchor.set(0.5,0);
-            this.setInfo();
-        }
-
-        private setInfo() {
-            let str = "Turn of " + this.current_player_color + " player";
-            this.info.setText(str);
-            this.info.setStyle({
-                "fill":this.current_player_color,
-                "font":"bold 40px Arial"
-            });
+            this.info = this.add.existing(new Info(this.game,this.world.centerX,10));
+            this.info.setInfo(this.current_player,this.left_turn_cells);
         }
 
         private drawBoard() {
@@ -58,7 +48,13 @@ module VirusGame {
 
         private initGame() {
             this.current_player_number = 0;
-            this.left_turn_cells = 3;
+            this.left_turn_cells = 1;
+            this.current_player.is_first_turn = false;
+        }
+
+        
+        get current_player() {
+            return this.players[this.current_player_number];
         }
 
         get current_player_color():string {
@@ -66,8 +62,23 @@ module VirusGame {
         }
 
         endTurn() {
-            this.current_player_number = (this.current_player_number+1)%this.number_of_players;
-            this.setInfo();
+            this.left_turn_cells--;
+            this.checkTurnChange();
+
+            this.info.setInfo(this.current_player,this.left_turn_cells);
+        }
+
+        private checkTurnChange() {
+            if(this.left_turn_cells == 0) {
+                this.current_player_number = (this.current_player_number+1)%this.number_of_players;
+
+                if (this.current_player.is_first_turn == true) {
+                    this.left_turn_cells = 1;
+                    this.current_player.is_first_turn = false;
+                } else {
+                    this.left_turn_cells = 3;
+                }
+            }
         }
     }
 }
