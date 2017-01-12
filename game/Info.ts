@@ -7,7 +7,7 @@ module VirusGame {
         }
 
         setInfo(player: BoardPlayer, left_turns: number) {
-            let str = left_turns + " cells more for " + player.color.toString() + " player";
+            let str = R.strings['player_info'](left_turns,player.color);
             this.setText(str);
             this.setStyle({
                 "fill":player.color,

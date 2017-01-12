@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "noImplicitAny": true,
+    //"noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "target": "es6",
@@ -12,6 +12,7 @@
   "include": [
     "tsDefinitions/phaser.d.ts",
     "app.ts",
-    "game/**/*.ts"
+    "game/**/*.ts",
+    "resources/**/*.ts"
   ]
 }

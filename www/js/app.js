@@ -46,8 +46,8 @@ var VirusGame;
 var VirusGame;
 (function (VirusGame) {
     class BoardGame extends Phaser.State {
-        constructor() {
-            super(...arguments);
+        constructor(...args) {
+            super(...args);
             this.number_of_players = 2;
             this.colors = ['blue', 'yellow'];
         }
@@ -157,11 +157,11 @@ var VirusGame;
             this.anchor.set(0.5, 0);
         }
         setInfo(player, left_turns) {
-            let str = left_turns + " cells more for " + player.color.toString() + " player";
+            let str = R.strings['player_info'](left_turns, player.color);
             this.setText(str);
             this.setStyle({
                 "fill": player.color,
-                "font": "bold 40px Arial"
+                "font": "bold 30px Arial"
             });
         }
     }
@@ -171,14 +171,14 @@ var VirusGame;
 (function (VirusGame) {
     class MainMenu extends Phaser.State {
         create() {
-            this.logo = this.add.text(this.world.centerX, 100, 'VIRUS', {
+            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), {
                 "fill": "#2ba6b7",
                 "font": "bold 60px Arial"
             });
             this.logo.anchor.set(0.5, 0.5);
             this.button = this.add.button(this.world.centerX, 200, 'ui', this.startGame, this, 'blue_button01', 'blue_button03', 'blue_button05');
             this.button.anchor.set(0.5, 0.5);
-            this.button_text = this.add.text(0, 0, 'Start game', {
+            this.button_text = this.add.text(0, 0, R.strings['start_game'], {
                 "fill": "#fefefe",
                 "font": "bold 24px Arial",
                 "stroke": "#000000",
@@ -212,4 +212,13 @@ var VirusGame;
     }
     VirusGame.Preloader = Preloader;
 })(VirusGame || (VirusGame = {}));
+let R = {
+    strings: undefined,
+    fonts: undefined
+};
+R.strings = {
+    game_name: 'Virus',
+    start_game: 'Start game',
+    player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player"
+};
 //# sourceMappingURL=app.js.map
