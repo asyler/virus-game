@@ -25,7 +25,7 @@ module VirusGame {
         }
 
         private setInfo() {
-            var str = "Turn of " + this.current_player_color + " player";
+            let str = "Turn of " + this.current_player_color + " player";
             this.info.setText(str);
             this.info.setStyle({
                 "fill":this.current_player_color,
