@@ -11,7 +11,7 @@ module VirusGame {
             this.setText(str);
             this.setStyle({
                 "fill":player.color,
-                "font":"bold 40px Arial"
+                "font":"bold 30px Arial"
             });
         }
     }
