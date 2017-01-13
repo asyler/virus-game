@@ -1,5 +1,5 @@
 module VirusGame {
-    export class Info extends Phaser.Text {
+    export class InfoPanel extends Phaser.Text {
 
         constructor(game: Phaser.Game, x:number, y:number) {
             super(game,x,y,null);

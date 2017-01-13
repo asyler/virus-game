@@ -7,7 +7,7 @@ module VirusGame {
 
         board: Phaser.Group;
         players: Array<BoardPlayer>;
-        info: Info;
+        info: InfoPanel;
 
         colors: Array<string> = ['blue','yellow'];
 
@@ -19,7 +19,7 @@ module VirusGame {
         }
 
         private drawInfo() {
-            this.info = this.add.existing(new Info(this.game,this.world.centerX,10));
+            this.info = this.add.existing(new InfoPanel(this.game,this.world.centerX,10));
             this.info.setInfo(this.current_player,this.left_turn_cells);
         }
 
