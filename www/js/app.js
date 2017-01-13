@@ -10,29 +10,30 @@ var VirusGame;
         CellState[CellState["Dead"] = 2] = "Dead";
     })(CellState || (CellState = {}));
     ;
-    class BoardCell {
-        constructor(game, x, y, board_game) {
+    class BoardCell extends Phaser.Image {
+        constructor(x, y, board_game) {
+            super(board_game.game, 0, 0, 'board_cells', 'grey_box');
+            this.x = x;
+            this.y = y;
             this.state = 0;
-            let image = game.add.image(0, 0, 'board_cells', 'grey_box', board_game.board);
-            this.image = image;
-            image.inputEnabled = true;
-            image.input.useHandCursor = true;
-            image.events.onInputOver.add(function () {
-                image.tint = 0xaaaaaa;
-            });
-            image.events.onInputOut.add(function () {
-                image.tint = 0xffffff;
-            });
-            image.events.onInputUp.add(function () {
+            this.inputEnabled = true;
+            this.input.useHandCursor = true;
+            this.events.onInputOver.add(function () {
+                this.tint = 0xaaaaaa;
+            }, this);
+            this.events.onInputOut.add(function () {
+                this.tint = 0xffffff;
+            }, this);
+            this.events.onInputUp.add(function () {
                 if (board_game.isTurnLegal(x, y)) {
                     switch (this.state) {
                         case 0:
-                            this.image.frameName = board_game.current_player_color + '_boxCross';
+                            this.frameName = board_game.current_player_color + '_boxCross';
                             this.state = 1;
                             board_game.endTurn();
                             break;
                         case 1:
-                            this.image.frameName = board_game.current_player_color + '_boxCheckmark';
+                            this.frameName = board_game.current_player_color + '_boxCheckmark';
                             this.state = 2;
                             board_game.endTurn();
                             break;
@@ -74,7 +75,8 @@ var VirusGame;
             this.board.alignIn(this.world.bounds, Phaser.CENTER);
         }
         addCell(x, y) {
-            let cell = new VirusGame.BoardCell(this.game, x, y, this);
+            let cell = new VirusGame.BoardCell(x, y, this);
+            this.board.add(cell);
         }
         addPlayers() {
             this.players = [];
@@ -99,17 +101,17 @@ var VirusGame;
         }
         checkTurnChange() {
             if (this.left_turn_cells == 0) {
-                if (this.current_player.is_first_turn == true)
+                if (this.current_player.is_first_turn)
                     this.current_player.is_first_turn = false;
                 this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
-                if (this.current_player.is_first_turn == true)
+                if (this.current_player.is_first_turn)
                     this.left_turn_cells = 1;
                 else
                     this.left_turn_cells = 3;
             }
         }
         isTurnLegal(x, y) {
-            if (this.current_player.is_first_turn == true)
+            if (this.current_player.is_first_turn)
                 return this.isTileOnEdge(x, y);
             return true;
         }
