@@ -24,19 +24,21 @@ var VirusGame;
                 image.tint = 0xffffff;
             });
             image.events.onInputUp.add(function () {
-                switch (this.state) {
-                    case 0:
-                        this.image.frameName = board_game.current_player_color + '_boxCross';
-                        this.state = 1;
-                        board_game.endTurn();
-                        break;
-                    case 1:
-                        this.image.frameName = board_game.current_player_color + '_boxCheckmark';
-                        this.state = 2;
-                        board_game.endTurn();
-                        break;
-                    case 2:
-                        break;
+                if (board_game.isTurnLegal(x, y)) {
+                    switch (this.state) {
+                        case 0:
+                            this.image.frameName = board_game.current_player_color + '_boxCross';
+                            this.state = 1;
+                            board_game.endTurn();
+                            break;
+                        case 1:
+                            this.image.frameName = board_game.current_player_color + '_boxCheckmark';
+                            this.state = 2;
+                            board_game.endTurn();
+                            break;
+                        case 2:
+                            break;
+                    }
                 }
             }, this);
         }
@@ -46,8 +48,8 @@ var VirusGame;
 var VirusGame;
 (function (VirusGame) {
     class BoardGame extends Phaser.State {
-        constructor(...args) {
-            super(...args);
+        constructor() {
+            super(...arguments);
             this.number_of_players = 2;
             this.colors = ['blue', 'yellow'];
         }
@@ -58,7 +60,7 @@ var VirusGame;
             this.drawInfo();
         }
         drawInfo() {
-            this.info = this.add.existing(new VirusGame.Info(this.game, this.world.centerX, 10));
+            this.info = this.add.existing(new VirusGame.InfoPanel(this.game, this.world.centerX, 10));
             this.info.setInfo(this.current_player, this.left_turn_cells);
         }
         drawBoard() {
@@ -83,7 +85,6 @@ var VirusGame;
         initGame() {
             this.current_player_number = 0;
             this.left_turn_cells = 1;
-            this.current_player.is_first_turn = false;
         }
         get current_player() {
             return this.players[this.current_player_number];
@@ -98,15 +99,25 @@ var VirusGame;
         }
         checkTurnChange() {
             if (this.left_turn_cells == 0) {
-                this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
-                if (this.current_player.is_first_turn == true) {
-                    this.left_turn_cells = 1;
+                if (this.current_player.is_first_turn == true)
                     this.current_player.is_first_turn = false;
-                }
-                else {
+                this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
+                if (this.current_player.is_first_turn == true)
+                    this.left_turn_cells = 1;
+                else
                     this.left_turn_cells = 3;
-                }
             }
+        }
+        isTurnLegal(x, y) {
+            if (this.current_player.is_first_turn == true)
+                return this.isTileOnEdge(x, y);
+            return true;
+        }
+        isTileOnEdge(x, y) {
+            if (x == 0 || x == 9 || y == 0 || y == 9)
+                return true;
+            else
+                return false;
         }
     }
     VirusGame.BoardGame = BoardGame;
@@ -151,7 +162,7 @@ var VirusGame;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    class Info extends Phaser.Text {
+    class InfoPanel extends Phaser.Text {
         constructor(game, x, y) {
             super(game, x, y, null);
             this.anchor.set(0.5, 0);
@@ -165,7 +176,7 @@ var VirusGame;
             });
         }
     }
-    VirusGame.Info = Info;
+    VirusGame.InfoPanel = InfoPanel;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {

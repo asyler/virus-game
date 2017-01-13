@@ -49,7 +49,6 @@ module VirusGame {
         private initGame() {
             this.current_player_number = 0;
             this.left_turn_cells = 1;
-            this.current_player.is_first_turn = false;
         }
 
         
@@ -70,15 +69,33 @@ module VirusGame {
 
         private checkTurnChange() {
             if(this.left_turn_cells == 0) {
+                if(this.current_player.is_first_turn == true) 
+                    this.current_player.is_first_turn = false;
+
                 this.current_player_number = (this.current_player_number+1)%this.number_of_players;
 
-                if (this.current_player.is_first_turn == true) {
+                if(this.current_player.is_first_turn == true)
                     this.left_turn_cells = 1;
-                    this.current_player.is_first_turn = false;
-                } else {
+                else
                     this.left_turn_cells = 3;
-                }
+
             }
+        }
+
+        isTurnLegal(x:number, y:number): boolean {
+
+            if(this.current_player.is_first_turn == true)
+                return this.isTileOnEdge(x,y);
+
+            return true;
+        }
+
+        private isTileOnEdge(x: number, y:number): boolean {
+
+            if(x==0||x==9||y==0||y==9)
+                return true;
+            else
+                return false;
         }
     }
 }
