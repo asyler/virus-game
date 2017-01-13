@@ -1,7 +1,8 @@
 module VirusGame {
-    const enum CellState { Empty, Alive, Dead };
+    export const enum CellState { Empty, Alive, Dead };
 
     export class BoardCell extends Phaser.Image {
+
         state: CellState = CellState.Empty;
         player: BoardPlayer;
 
@@ -16,20 +17,19 @@ module VirusGame {
             this.events.onInputOut.add(function () {
                 (<BoardCell>this).tint = 0xffffff;
             }, this);
-            //this.events.onInputOut.add(function () {
-            //    (<BoardCell>this).tint = 0xffffff;
-            //}, this);
             this.events.onInputUp.add(function () {
                 if (board_game.isTurnLegal(x, y)) {
                     switch (this.state) {
                         case CellState.Empty:
                             this.frameName = board_game.current_player_color + '_boxCross';
                             this.state = CellState.Alive;
+                            this.player = board_game.current_player;
                             board_game.endTurn();
                             break;
                         case CellState.Alive:
                             this.frameName = board_game.current_player_color + '_boxCheckmark';
                             this.state = CellState.Dead;
+                            this.player = board_game.current_player;
                             board_game.endTurn();
                             break;
                         case CellState.Dead:

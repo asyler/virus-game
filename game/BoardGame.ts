@@ -28,7 +28,7 @@ module VirusGame {
 
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
-                    this.addCell(i, j);
+                    this.addCell(j, i);
                 }
             }
             this.board.align(10, 10, 38, 36);
@@ -38,6 +38,10 @@ module VirusGame {
         private addCell(x: number, y: number) {
             let cell = new BoardCell(x, y, this);
             this.board.add(cell);
+        }
+
+        private getCell(x: number, y: number): BoardCell {
+            return <BoardCell>this.board.getAt(10 * y + x);
         }
 
         private addPlayers() {
@@ -85,7 +89,11 @@ module VirusGame {
 
         isTurnLegal(x: number, y: number): boolean {
             if (this.current_player.is_first_turn)
-                return this.isTileOnEdge(x, y);
+                if (this.getCell(x, y).state == CellState.Empty)
+                    return this.isTileOnEdge(x, y);
+                else
+                    return false;
+
 
             return true;
         }

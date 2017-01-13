@@ -8,7 +8,7 @@ var VirusGame;
         CellState[CellState["Empty"] = 0] = "Empty";
         CellState[CellState["Alive"] = 1] = "Alive";
         CellState[CellState["Dead"] = 2] = "Dead";
-    })(CellState || (CellState = {}));
+    })(CellState = VirusGame.CellState || (VirusGame.CellState = {}));
     ;
     class BoardCell extends Phaser.Image {
         constructor(x, y, board_game) {
@@ -30,11 +30,13 @@ var VirusGame;
                         case 0:
                             this.frameName = board_game.current_player_color + '_boxCross';
                             this.state = 1;
+                            this.player = board_game.current_player;
                             board_game.endTurn();
                             break;
                         case 1:
                             this.frameName = board_game.current_player_color + '_boxCheckmark';
                             this.state = 2;
+                            this.player = board_game.current_player;
                             board_game.endTurn();
                             break;
                         case 2:
@@ -68,7 +70,7 @@ var VirusGame;
             this.board = this.add.group();
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
-                    this.addCell(i, j);
+                    this.addCell(j, i);
                 }
             }
             this.board.align(10, 10, 38, 36);
@@ -77,6 +79,9 @@ var VirusGame;
         addCell(x, y) {
             let cell = new VirusGame.BoardCell(x, y, this);
             this.board.add(cell);
+        }
+        getCell(x, y) {
+            return this.board.getAt(10 * y + x);
         }
         addPlayers() {
             this.players = [];
@@ -112,7 +117,10 @@ var VirusGame;
         }
         isTurnLegal(x, y) {
             if (this.current_player.is_first_turn)
-                return this.isTileOnEdge(x, y);
+                if (this.getCell(x, y).state == 0)
+                    return this.isTileOnEdge(x, y);
+                else
+                    return false;
             return true;
         }
         isTileOnEdge(x, y) {
