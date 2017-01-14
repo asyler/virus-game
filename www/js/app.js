@@ -11,10 +11,10 @@ var VirusGame;
     })(CellState = VirusGame.CellState || (VirusGame.CellState = {}));
     ;
     class BoardCell extends Phaser.Image {
-        constructor(x, y, board_game) {
+        constructor(row, col, board_game) {
             super(board_game.game, 0, 0, 'board_cells', 'grey_box');
-            this.x = x;
-            this.y = y;
+            this.row = row;
+            this.col = col;
             this.state = 0;
             this.inputEnabled = true;
             this.input.useHandCursor = true;
@@ -25,7 +25,7 @@ var VirusGame;
                 this.tint = 0xffffff;
             }, this);
             this.events.onInputUp.add(function () {
-                if (board_game.isTurnLegal(x, y)) {
+                if (board_game.isTurnLegal(row, col)) {
                     switch (this.state) {
                         case 0:
                             this.frameName = board_game.current_player_color + '_boxCross';
@@ -54,6 +54,7 @@ var VirusGame;
         constructor() {
             super(...arguments);
             this.number_of_players = 2;
+            this.activeCellsIndex = [];
             this.colors = ['blue', 'yellow'];
         }
         create() {
@@ -68,20 +69,24 @@ var VirusGame;
         }
         drawBoard() {
             this.board = this.add.group();
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 10; j++) {
-                    this.addCell(j, i);
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    this.addCell(row, col);
                 }
             }
             this.board.align(10, 10, 38, 36);
             this.board.alignIn(this.world.bounds, Phaser.CENTER);
         }
-        addCell(x, y) {
-            let cell = new VirusGame.BoardCell(x, y, this);
+        addCell(row, col) {
+            let cell = new VirusGame.BoardCell(row, col, this);
             this.board.add(cell);
         }
-        getCell(x, y) {
-            return this.board.getAt(10 * y + x);
+        cellIndex(row, col) {
+            let index = 10 * row + col;
+            return index;
+        }
+        getCell(row, col) {
+            return this.board.getAt(this.cellIndex(row, col));
         }
         addPlayers() {
             this.players = [];
@@ -102,12 +107,14 @@ var VirusGame;
         endTurn() {
             this.left_turn_cells--;
             this.checkTurnChange();
+            this.updateActiveRegion();
             this.info.setInfo(this.current_player, this.left_turn_cells);
         }
         checkTurnChange() {
             if (this.left_turn_cells == 0) {
                 if (this.current_player.is_first_turn)
                     this.current_player.is_first_turn = false;
+                this.activeCellsIndex = [];
                 this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
                 if (this.current_player.is_first_turn)
                     this.left_turn_cells = 1;
@@ -115,19 +122,64 @@ var VirusGame;
                     this.left_turn_cells = 3;
             }
         }
-        isTurnLegal(x, y) {
+        isTurnLegal(row, col) {
+            let cell = this.getCell(row, col);
             if (this.current_player.is_first_turn)
-                if (this.getCell(x, y).state == 0)
-                    return this.isTileOnEdge(x, y);
+                if (cell.state == 0)
+                    return this.isTileOnEdge(row, col);
                 else
                     return false;
-            return true;
+            if (cell.state == 0 || cell.state == 1 && cell.player != this.current_player)
+                if (this.isAnyNeighbourActive(row, col)) {
+                    this.activeCellsIndex = [];
+                    return true;
+                }
+                else
+                    return false;
         }
-        isTileOnEdge(x, y) {
-            if (x == 0 || x == 9 || y == 0 || y == 9)
+        isTileOnEdge(row, col) {
+            if (row == 0 || row == 9 || col == 0 || col == 9)
                 return true;
             else
                 return false;
+        }
+        isAnyNeighbourActive(row, col) {
+            let index1 = this.cellIndex(row - 1, col);
+            let index2 = this.cellIndex(row + 1, col);
+            let index3 = this.cellIndex(row, col - 1);
+            let index4 = this.cellIndex(row, col + 1);
+            if (this.activeCellsIndex.indexOf(index1) != -1 ||
+                this.activeCellsIndex.indexOf(index2) != -1 ||
+                this.activeCellsIndex.indexOf(index3) != -1 ||
+                this.activeCellsIndex.indexOf(index4) != -1)
+                return true;
+            else
+                return false;
+        }
+        updateActiveRegion() {
+            for (let element of this.board.children) {
+                let cell = element;
+                if (cell.state == 1 && cell.player == this.current_player) {
+                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activateNeighboursOf(cell.row, cell.col);
+                }
+            }
+        }
+        activateNeighboursOf(row, col) {
+            this.activateNeighbour(row - 1, col);
+            this.activateNeighbour(row + 1, col);
+            this.activateNeighbour(row, col - 1);
+            this.activateNeighbour(row, col + 1);
+        }
+        activateNeighbour(row, col) {
+            let index = this.cellIndex(row, col);
+            if (index >= 0 && index < this.board.children.length && this.activeCellsIndex.indexOf(index) == -1) {
+                let cell = this.getCell(row, col);
+                if (cell.state == 2 && cell.player == this.current_player) {
+                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activateNeighboursOf(row, col);
+                }
+            }
         }
     }
     VirusGame.BoardGame = BoardGame;
