@@ -54,7 +54,8 @@ var VirusGame;
         constructor() {
             super(...arguments);
             this.number_of_players = 2;
-            this.activeCellsIndex = [];
+            this.activeCells = [];
+            this.possibleMoves = [];
             this.colors = ['blue', 'yellow'];
         }
         create() {
@@ -64,8 +65,8 @@ var VirusGame;
             this.drawInfo();
         }
         drawInfo() {
-            this.info = this.add.existing(new VirusGame.InfoPanel(this.game, this.world.centerX, 10));
-            this.info.setInfo(this.current_player, this.left_turn_cells);
+            this.infoPanel = this.add.existing(new VirusGame.InfoPanel(this.game, this.world.centerX, 10));
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
         }
         drawBoard() {
             this.board = this.add.group();
@@ -85,8 +86,11 @@ var VirusGame;
             let index = 10 * row + col;
             return index;
         }
-        getCell(row, col) {
-            return this.board.getAt(this.cellIndex(row, col));
+        getCellByCoords(row, col) {
+            return this.getCellByIndex(this.cellIndex(row, col));
+        }
+        getCellByIndex(index) {
+            return this.board.getAt(index);
         }
         addPlayers() {
             this.players = [];
@@ -107,14 +111,15 @@ var VirusGame;
         endTurn() {
             this.left_turn_cells--;
             this.checkTurnChange();
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
             this.updateActiveRegion();
-            this.info.setInfo(this.current_player, this.left_turn_cells);
+            this.updatePossibleMoves();
         }
         checkTurnChange() {
             if (this.left_turn_cells == 0) {
                 if (this.current_player.is_first_turn)
                     this.current_player.is_first_turn = false;
-                this.activeCellsIndex = [];
+                this.activeCells = [];
                 this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
                 if (this.current_player.is_first_turn)
                     this.left_turn_cells = 1;
@@ -123,44 +128,57 @@ var VirusGame;
             }
         }
         isTurnLegal(row, col) {
-            let cell = this.getCell(row, col);
+            let cell = this.getCellByCoords(row, col);
             if (this.current_player.is_first_turn)
                 if (cell.state == 0)
                     return this.isTileOnEdge(row, col);
                 else
                     return false;
-            if (cell.state == 0 || cell.state == 1 && cell.player != this.current_player)
-                if (this.isAnyNeighbourActive(row, col)) {
-                    this.activeCellsIndex = [];
+            if (this.isCellOccupiable(row, col))
+                if (this.isAnyNeighbourActive(row, col))
                     return true;
-                }
                 else
                     return false;
         }
+        isCellOccupiable(row, col) {
+            let cell = this.getCellByCoords(row, col);
+            return cell.state == 0 || cell.state == 1 && cell.player != this.current_player;
+        }
         isTileOnEdge(row, col) {
-            if (row == 0 || row == 9 || col == 0 || col == 9)
-                return true;
-            else
-                return false;
+            return this.isTileOnRightEdge(row, col) || this.isTileOnLeftEdge(row, col) ||
+                this.isTileOnTopEdge(row, col) || this.isTileOnBottomEdge(row, col);
+        }
+        isTileOnRightEdge(row, col) {
+            return col == 9;
+        }
+        isTileOnLeftEdge(row, col) {
+            return col == 0;
+        }
+        isTileOnTopEdge(row, col) {
+            return row == 0;
+        }
+        isTileOnBottomEdge(row, col) {
+            return row == 9;
         }
         isAnyNeighbourActive(row, col) {
             let index1 = this.cellIndex(row - 1, col);
             let index2 = this.cellIndex(row + 1, col);
             let index3 = this.cellIndex(row, col - 1);
             let index4 = this.cellIndex(row, col + 1);
-            if (this.activeCellsIndex.indexOf(index1) != -1 ||
-                this.activeCellsIndex.indexOf(index2) != -1 ||
-                this.activeCellsIndex.indexOf(index3) != -1 ||
-                this.activeCellsIndex.indexOf(index4) != -1)
+            if (this.activeCells.indexOf(index1) != -1 ||
+                this.activeCells.indexOf(index2) != -1 ||
+                this.activeCells.indexOf(index3) != -1 ||
+                this.activeCells.indexOf(index4) != -1)
                 return true;
             else
                 return false;
         }
         updateActiveRegion() {
+            this.activeCells = [];
             for (let element of this.board.children) {
                 let cell = element;
                 if (cell.state == 1 && cell.player == this.current_player) {
-                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activeCells.push(this.cellIndex(cell.row, cell.col));
                     this.activateNeighboursOf(cell.row, cell.col);
                 }
             }
@@ -173,13 +191,39 @@ var VirusGame;
         }
         activateNeighbour(row, col) {
             let index = this.cellIndex(row, col);
-            if (index >= 0 && index < this.board.children.length && this.activeCellsIndex.indexOf(index) == -1) {
-                let cell = this.getCell(row, col);
+            if (index >= 0 && index < this.board.children.length && this.activeCells.indexOf(index) == -1) {
+                let cell = this.getCellByIndex(index);
                 if (cell.state == 2 && cell.player == this.current_player) {
-                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activeCells.push(index);
                     this.activateNeighboursOf(row, col);
                 }
             }
+        }
+        updatePossibleMoves() {
+            this.possibleMoves = [];
+            for (let index of this.activeCells) {
+                let cell = this.getCellByIndex(index);
+                let row = cell.row;
+                let col = cell.col;
+                if (!this.isTileOnRightEdge(row, col))
+                    this.checkPossibleMove(row, col + 1);
+                if (!this.isTileOnLeftEdge(row, col))
+                    this.checkPossibleMove(row, col - 1);
+                if (!this.isTileOnTopEdge(row, col))
+                    this.checkPossibleMove(row - 1, col);
+                if (!this.isTileOnBottomEdge(row, col))
+                    this.checkPossibleMove(row + 1, col);
+            }
+            if (this.possibleMoves.length == 0 && !this.current_player.is_first_turn) {
+                this.infoPanel.gameOver(this.current_player);
+            }
+        }
+        checkPossibleMove(row, col) {
+            let index = this.cellIndex(row, col);
+            if (index >= 0 && index < this.board.children.length && this.possibleMoves.indexOf(index) == -1)
+                if (this.isCellOccupiable(row, col)) {
+                    this.possibleMoves.push(index);
+                }
         }
     }
     VirusGame.BoardGame = BoardGame;
@@ -231,6 +275,14 @@ var VirusGame;
         }
         setInfo(player, left_turns) {
             let str = R.strings['player_info'](left_turns, player.color);
+            this.setText(str);
+            this.setStyle({
+                "fill": player.color,
+                "font": "bold 30px Arial"
+            });
+        }
+        gameOver(player) {
+            let str = R.strings['game_over'](player.color);
             this.setText(str);
             this.setStyle({
                 "fill": player.color,
@@ -292,6 +344,7 @@ let R = {
 R.strings = {
     game_name: 'Virus',
     start_game: 'Start game',
-    player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player"
+    player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",
+    game_over: (player_color) => "Game Over for " + player_color.toString() + " player"
 };
 //# sourceMappingURL=app.js.map

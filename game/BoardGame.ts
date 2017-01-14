@@ -4,11 +4,12 @@ module VirusGame {
         number_of_players: number = 2;
         current_player_number: number;
         left_turn_cells: number;
-        activeCellsIndex: Array<number> = [];
+        activeCells: Array<number> = [];
+        possibleMoves: Array<number> = [];
 
         board: Phaser.Group;
         players: Array<BoardPlayer>;
-        info: InfoPanel;
+        infoPanel: InfoPanel;
 
         colors: Array<string> = ['blue', 'yellow'];
 
@@ -20,8 +21,8 @@ module VirusGame {
         }
 
         private drawInfo() {
-            this.info = this.add.existing(new InfoPanel(this.game, this.world.centerX, 10));
-            this.info.setInfo(this.current_player, this.left_turn_cells);
+            this.infoPanel = this.add.existing(new InfoPanel(this.game, this.world.centerX, 10));
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
         }
 
         private drawBoard() {
@@ -46,8 +47,12 @@ module VirusGame {
             return index;
         }
 
-        private getCell(row: number, col: number): BoardCell {
-            return <BoardCell>this.board.getAt(this.cellIndex(row, col));
+        private getCellByCoords(row: number, col: number): BoardCell {
+            return this.getCellByIndex(this.cellIndex(row, col));
+        }
+
+        private getCellByIndex(index: number): BoardCell {
+            return <BoardCell>this.board.getAt(index);
         }
 
         private addPlayers() {
@@ -74,8 +79,10 @@ module VirusGame {
         endTurn() {
             this.left_turn_cells--;
             this.checkTurnChange();
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
+
             this.updateActiveRegion();
-            this.info.setInfo(this.current_player, this.left_turn_cells);
+            this.updatePossibleMoves();
         }
 
         private checkTurnChange() {
@@ -83,7 +90,7 @@ module VirusGame {
                 if (this.current_player.is_first_turn)
                     this.current_player.is_first_turn = false;
 
-                this.activeCellsIndex = [];
+                this.activeCells = [];
 
                 this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
 
@@ -96,7 +103,7 @@ module VirusGame {
         }
 
         isTurnLegal(row: number, col: number): boolean {
-            let cell = this.getCell(row, col);
+            let cell = this.getCellByCoords(row, col);
 
             if (this.current_player.is_first_turn)
                 if (cell.state == CellState.Empty)
@@ -104,20 +111,33 @@ module VirusGame {
                 else
                     return false;
 
-            if (cell.state == CellState.Empty || cell.state == CellState.Alive && cell.player != this.current_player)
-                if (this.isAnyNeighbourActive(row, col)) {
-                    this.activeCellsIndex = [];
+            if (this.isCellOccupiable(row, col))
+                if (this.isAnyNeighbourActive(row, col))
                     return true;
-                }
                 else
                     return false;
         }
 
+        private isCellOccupiable(row: number, col: number) {
+            let cell = this.getCellByCoords(row, col);
+            return cell.state == CellState.Empty || cell.state == CellState.Alive && cell.player != this.current_player;
+        }
+
         private isTileOnEdge(row: number, col: number): boolean {
-            if (row == 0 || row == 9 || col == 0 || col == 9)
-                return true;
-            else
-                return false;
+            return this.isTileOnRightEdge(row, col) || this.isTileOnLeftEdge(row, col) ||
+                this.isTileOnTopEdge(row, col) || this.isTileOnBottomEdge(row, col);
+        }
+        private isTileOnRightEdge(row: number, col: number): boolean {
+            return col == 9;
+        }
+        private isTileOnLeftEdge(row: number, col: number): boolean {
+            return col == 0;
+        }
+        private isTileOnTopEdge(row: number, col: number): boolean {
+            return row == 0;
+        }
+        private isTileOnBottomEdge(row: number, col: number): boolean {
+            return row == 9;
         }
 
         private isAnyNeighbourActive(row: number, col: number): boolean {
@@ -126,21 +146,23 @@ module VirusGame {
             let index3 = this.cellIndex(row, col - 1);
             let index4 = this.cellIndex(row, col + 1);
 
-            if (this.activeCellsIndex.indexOf(index1) != -1 ||
-                this.activeCellsIndex.indexOf(index2) != -1 ||
-                this.activeCellsIndex.indexOf(index3) != -1 ||
-                this.activeCellsIndex.indexOf(index4) != -1)
+            if (this.activeCells.indexOf(index1) != -1 ||
+                this.activeCells.indexOf(index2) != -1 ||
+                this.activeCells.indexOf(index3) != -1 ||
+                this.activeCells.indexOf(index4) != -1)
                 return true;
             else
                 return false;
         }
 
         private updateActiveRegion() {
+            this.activeCells = [];
+
             for (let element of this.board.children) {
                 let cell = <BoardCell>element;
 
                 if (cell.state == CellState.Alive && cell.player == this.current_player) {
-                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activeCells.push(this.cellIndex(cell.row, cell.col));
                     this.activateNeighboursOf(cell.row, cell.col);
                 }
             }
@@ -156,13 +178,46 @@ module VirusGame {
         private activateNeighbour(row: number, col: number) {
             let index = this.cellIndex(row, col);
 
-            if (index >= 0 && index < this.board.children.length && this.activeCellsIndex.indexOf(index) == -1) {
-                let cell = this.getCell(row, col);
+            if (index >= 0 && index < this.board.children.length && this.activeCells.indexOf(index) == -1) {
+                let cell = this.getCellByIndex(index);
                 if (cell.state == CellState.Dead && cell.player == this.current_player) {
-                    this.activeCellsIndex.push(this.cellIndex(cell.row, cell.col));
+                    this.activeCells.push(index);
                     this.activateNeighboursOf(row, col);
                 }
             }
+        }
+
+        private updatePossibleMoves() {
+            this.possibleMoves = [];
+
+            for (let index of this.activeCells) {
+                let cell = this.getCellByIndex(index);
+                let row = cell.row;
+                let col = cell.col;
+
+                if (!this.isTileOnRightEdge(row, col))
+                    this.checkPossibleMove(row, col + 1);
+                if (!this.isTileOnLeftEdge(row, col))
+                    this.checkPossibleMove(row, col - 1);
+                if (!this.isTileOnTopEdge(row, col))
+                    this.checkPossibleMove(row - 1, col);
+                if (!this.isTileOnBottomEdge(row, col))
+                    this.checkPossibleMove(row + 1, col);
+            }
+
+            if (this.possibleMoves.length == 0 && !this.current_player.is_first_turn) {
+                this.infoPanel.gameOver(this.current_player);
+            }
+        }
+
+        private checkPossibleMove(row: number, col: number) {
+            let index = this.cellIndex(row, col);
+
+            if (index >= 0 && index < this.board.children.length && this.possibleMoves.indexOf(index) == -1)
+                if (this.isCellOccupiable(row, col)) {
+                    this.possibleMoves.push(index);
+                    //this.getCellByIndex(index).tint = 0xabcdef;
+                }
         }
     }
 }
