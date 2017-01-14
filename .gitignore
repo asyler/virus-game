@@ -1,5 +1,6 @@
 .idea/*
 game/*.js
 game/*.js.map
+www/js/*.js
 www/js/*.js.map
 .vscode/*

@@ -39,6 +39,8 @@ module VirusGame {
 
         private addCell(row: number, col: number) {
             let cell = new BoardCell(row, col, this);
+            if (this.isTileOnEdge(row, col))
+                cell.makePossibleToMoveTo();
             this.board.add(cell);
         }
 
@@ -189,6 +191,15 @@ module VirusGame {
 
         private updatePossibleMoves() {
             this.possibleMoves = [];
+            for (let cell of this.board.children) {
+                (<BoardCell>cell).disablePossibleToMoveTo();
+            }
+
+            if (this.current_player.is_first_turn)
+                for (let cell of this.board.children)
+                    if (this.isTileOnEdge((<BoardCell>cell).row, (<BoardCell>cell).col)
+                        && (<BoardCell>cell).state == CellState.Empty)
+                        (<BoardCell>cell).makePossibleToMoveTo();
 
             for (let index of this.activeCells) {
                 let cell = this.getCellByIndex(index);
@@ -216,7 +227,7 @@ module VirusGame {
             if (index >= 0 && index < this.board.children.length && this.possibleMoves.indexOf(index) == -1)
                 if (this.isCellOccupiable(row, col)) {
                     this.possibleMoves.push(index);
-                    //this.getCellByIndex(index).tint = 0xabcdef;
+                    this.getCellByIndex(index).makePossibleToMoveTo();
                 }
         }
     }

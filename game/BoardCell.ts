@@ -6,17 +6,15 @@ module VirusGame {
         state: CellState = CellState.Empty;
         player: BoardPlayer;
 
+        isPossibleToMoveTo: boolean = false;
+
         constructor(public row: number, public col: number, board_game: BoardGame) {
             super(board_game.game, 0, 0, 'board_cells', 'grey_box');
 
             this.inputEnabled = true;
             this.input.useHandCursor = true;
-            this.events.onInputOver.add(function () {
-                (<BoardCell>this).tint = 0xaaaaaa;
-            }, this);
-            this.events.onInputOut.add(function () {
-                (<BoardCell>this).tint = 0xffffff;
-            }, this);
+            this.events.onInputOver.add(this.drawUnderPointer, this);
+            this.events.onInputOut.add(this.drawNormal, this);
             this.events.onInputUp.add(function () {
                 if (board_game.isTurnLegal(row, col)) {
                     switch (this.state) {
@@ -38,6 +36,25 @@ module VirusGame {
                     }
                 }
             }, this);
+        }
+
+        drawNormal() {
+            if(this.isPossibleToMoveTo)
+                this.tint = 0xabcdef;
+            else
+                this.tint = 0xffffff;
+        }
+        drawUnderPointer() {
+            this.tint = 0xaaaaaa;
+        }
+
+        makePossibleToMoveTo() {
+            this.isPossibleToMoveTo = true;
+            this.drawNormal();
+        }
+        disablePossibleToMoveTo() {
+            this.isPossibleToMoveTo = false;
+            this.drawNormal();
         }
     }
 } 

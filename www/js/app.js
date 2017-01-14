@@ -16,14 +16,11 @@ var VirusGame;
             this.row = row;
             this.col = col;
             this.state = 0;
+            this.isPossibleToMoveTo = false;
             this.inputEnabled = true;
             this.input.useHandCursor = true;
-            this.events.onInputOver.add(function () {
-                this.tint = 0xaaaaaa;
-            }, this);
-            this.events.onInputOut.add(function () {
-                this.tint = 0xffffff;
-            }, this);
+            this.events.onInputOver.add(this.drawUnderPointer, this);
+            this.events.onInputOut.add(this.drawNormal, this);
             this.events.onInputUp.add(function () {
                 if (board_game.isTurnLegal(row, col)) {
                     switch (this.state) {
@@ -44,6 +41,23 @@ var VirusGame;
                     }
                 }
             }, this);
+        }
+        drawNormal() {
+            if (this.isPossibleToMoveTo)
+                this.tint = 0xabcdef;
+            else
+                this.tint = 0xffffff;
+        }
+        drawUnderPointer() {
+            this.tint = 0xaaaaaa;
+        }
+        makePossibleToMoveTo() {
+            this.isPossibleToMoveTo = true;
+            this.drawNormal();
+        }
+        disablePossibleToMoveTo() {
+            this.isPossibleToMoveTo = false;
+            this.drawNormal();
         }
     }
     VirusGame.BoardCell = BoardCell;
@@ -80,6 +94,8 @@ var VirusGame;
         }
         addCell(row, col) {
             let cell = new VirusGame.BoardCell(row, col, this);
+            if (this.isTileOnEdge(row, col))
+                cell.makePossibleToMoveTo();
             this.board.add(cell);
         }
         cellIndex(row, col) {
@@ -201,6 +217,14 @@ var VirusGame;
         }
         updatePossibleMoves() {
             this.possibleMoves = [];
+            for (let cell of this.board.children) {
+                cell.disablePossibleToMoveTo();
+            }
+            if (this.current_player.is_first_turn)
+                for (let cell of this.board.children)
+                    if (this.isTileOnEdge(cell.row, cell.col)
+                        && cell.state == 0)
+                        cell.makePossibleToMoveTo();
             for (let index of this.activeCells) {
                 let cell = this.getCellByIndex(index);
                 let row = cell.row;
@@ -223,6 +247,7 @@ var VirusGame;
             if (index >= 0 && index < this.board.children.length && this.possibleMoves.indexOf(index) == -1)
                 if (this.isCellOccupiable(row, col)) {
                     this.possibleMoves.push(index);
+                    this.getCellByIndex(index).makePossibleToMoveTo();
                 }
         }
     }
