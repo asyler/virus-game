@@ -4,5 +4,4 @@ game/*.js.map
 www/js/*.js
 www/js/*.js.map
 node_modules/*
-server/*.js
 .vscode/*
