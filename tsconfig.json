@@ -11,8 +11,10 @@
   },
   "include": [
     "tsDefinitions/phaser.d.ts",
+    "tsDefinitions/socket.io-client.d.ts",
     "app.ts",
     "game/**/*.ts",
-    "resources/**/*.ts"
+    "resources/**/*.ts",
+    "node_modules/eureca.io/index.js"
   ]
 }

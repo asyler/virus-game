@@ -1,0 +1,25 @@
+{
+  "name": "virus-game",
+  "version": "0.1.0",
+  "description": "Virus, the exciting multiplatform multiplayer turn-based digital board game!",
+  "main": "server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asyler/virus-game.git"
+  },
+  "author": "asyler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/asyler/virus-game/issues"
+  },
+  "homepage": "https://github.com/asyler/virus-game#readme",
+  "dependencies": {
+    "socket.io": "^1.7.2"
+  },
+  "devDependencies": {
+    "typings": "^2.1.0"
+  }
+}
