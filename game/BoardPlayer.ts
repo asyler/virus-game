@@ -3,7 +3,7 @@ module VirusGame {
 
         is_first_turn: boolean = true;
 
-        constructor(public color: string) {
+        constructor(public color: string, public is_local_player?: boolean) {
 
         }
     }

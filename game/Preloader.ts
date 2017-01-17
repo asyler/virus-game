@@ -1,5 +1,7 @@
 module VirusGame {
 
+    export let client: Client;
+
     export class Preloader extends Phaser.State {
 
         preloadBar: Phaser.Sprite;
@@ -14,7 +16,7 @@ module VirusGame {
             this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
             this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
 
-            new Client();
+            client = new Client();
         }
 
         create() {
