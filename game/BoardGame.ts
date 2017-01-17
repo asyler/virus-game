@@ -49,7 +49,7 @@ module VirusGame {
             return index;
         }
 
-        private getCellByCoords(row: number, col: number): BoardCell {
+        public getCellByCoords(row: number, col: number): BoardCell {
             return this.getCellByIndex(this.cellIndex(row, col));
         }
 
@@ -60,7 +60,7 @@ module VirusGame {
         private addPlayers() {
             this.players = [];
             for (let i = 0; i < this.number_of_players; i++) {
-                this.players.push(new BoardPlayer(this.colors[i]));
+                this.players.push(new BoardPlayer(this.colors[i], i==0));
             }
         }
 

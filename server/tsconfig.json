@@ -5,20 +5,14 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "target": "es6",
-    "out": "www/js/app.js",
-    "outDir": "www/js",
+    "out": "server/server_app.js",
+    "outDir": "server/",
     "sourceMap": true
   },
   "include": [
-    "tsDefinitions/phaser.d.ts",
-    "app.ts",
-    "game/**/*.ts",
-    "resources/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
+    "server/Game.ts",
     "server/GameServer.ts",
-    "server/GameS.ts",
     "server/server.ts"
+    //"tsDefinitions/*"
   ]
 }

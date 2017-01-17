@@ -1,5 +1,5 @@
 window.onload = () => {
-    let game = new VirusGame.Game();
+    window.game = new VirusGame.Game();
 };
 var VirusGame;
 (function (VirusGame) {
@@ -15,6 +15,7 @@ var VirusGame;
             super(board_game.game, 0, 0, 'board_cells', 'grey_box');
             this.row = row;
             this.col = col;
+            this.board_game = board_game;
             this.state = 0;
             this.isPossibleToMoveTo = false;
             this.inputEnabled = true;
@@ -22,25 +23,31 @@ var VirusGame;
             this.events.onInputOver.add(this.drawUnderPointer, this);
             this.events.onInputOut.add(this.drawNormal, this);
             this.events.onInputUp.add(function () {
-                if (board_game.isTurnLegal(row, col)) {
-                    switch (this.state) {
-                        case 0:
-                            this.frameName = board_game.current_player_color + '_boxCross';
-                            this.state = 1;
-                            this.player = board_game.current_player;
-                            board_game.endTurn();
-                            break;
-                        case 1:
-                            this.frameName = board_game.current_player_color + '_boxCheckmark';
-                            this.state = 2;
-                            this.player = board_game.current_player;
-                            board_game.endTurn();
-                            break;
-                        case 2:
-                            break;
-                    }
-                }
+                if (this.board_game.current_player.is_local_player)
+                    this.cellPlayed();
             }, this);
+        }
+        cellPlayed() {
+            if (this.board_game.isTurnLegal(this.row, this.col)) {
+                switch (this.state) {
+                    case 0:
+                        VirusGame.client.player_move(this.row, this.col);
+                        this.frameName = this.board_game.current_player_color + '_boxCross';
+                        this.state = 1;
+                        this.player = this.board_game.current_player;
+                        this.board_game.endTurn();
+                        break;
+                    case 1:
+                        VirusGame.client.player_move(this.row, this.col);
+                        this.frameName = this.board_game.current_player_color + '_boxCheckmark';
+                        this.state = 2;
+                        this.player = this.board_game.current_player;
+                        this.board_game.endTurn();
+                        break;
+                    case 2:
+                        break;
+                }
+            }
         }
         drawNormal() {
             if (this.isPossibleToMoveTo)
@@ -111,7 +118,7 @@ var VirusGame;
         addPlayers() {
             this.players = [];
             for (let i = 0; i < this.number_of_players; i++) {
-                this.players.push(new VirusGame.BoardPlayer(this.colors[i]));
+                this.players.push(new VirusGame.BoardPlayer(this.colors[i], i == 0));
             }
         }
         initGame() {
@@ -256,8 +263,9 @@ var VirusGame;
 var VirusGame;
 (function (VirusGame) {
     class BoardPlayer {
-        constructor(color) {
+        constructor(color, is_local_player) {
             this.color = color;
+            this.is_local_player = is_local_player;
             this.is_first_turn = true;
         }
     }
@@ -281,7 +289,38 @@ var VirusGame;
 (function (VirusGame) {
     class Client {
         constructor() {
-            let socket = io();
+            let _this = this;
+            this.socket = io();
+            this.socket.on('onConnected', function (data) {
+                _this.id = data.id;
+                _this.findGame();
+            });
+            this.socket.on('added to game', function (game_id) {
+                console.log(game_id);
+                _this.active_game = game_id;
+            });
+            this.socket.on('start game', function (first_player) {
+                if (first_player != this.id) {
+                    let state = (window.game.state.getCurrentState());
+                    state.current_player_number = 1;
+                    state.up;
+                }
+            });
+            this.socket.on('player move', function (userid, gameid, row, col) {
+                if (gameid == _this.active_game && userid != _this.id) {
+                    let state = (window.game.state.getCurrentState());
+                    state.getCellByCoords(row, col).cellPlayed();
+                }
+            });
+        }
+        player_move(row, col) {
+            this.socket.emit('player move', this.active_game, row, col);
+        }
+        emit(type) {
+            this.socket.emit('m', type, this.id);
+        }
+        findGame() {
+            this.emit('findGame');
         }
     }
     VirusGame.Client = Client;
@@ -360,7 +399,7 @@ var VirusGame;
             this.load.setPreloadSprite(this.preloadBar);
             this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
             this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
-            new VirusGame.Client();
+            VirusGame.client = new VirusGame.Client();
         }
         create() {
             let tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 100, Phaser.Easing.Linear.None, true);
@@ -382,15 +421,4 @@ R.strings = {
     player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",
     game_over: (player_color) => "Game Over for " + player_color.toString() + " player"
 };
-let express = require('express');
-let app = express();
-let http = require('http').Server(app);
-let path = require('path');
-app.get('/', function (req, res) {
-    res.sendFile(path.resolve(__dirname + '/../index.html'));
-});
-app.use(express.static(path.resolve(__dirname + '/../')));
-http.listen(process.env.PORT || 3003, function () {
-    console.log('listening on *:' + process.env.PORT);
-});
 //# sourceMappingURL=app.js.map

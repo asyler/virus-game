@@ -1,3 +1,3 @@
 window.onload = () => {
-    let game = new VirusGame.Game();
+    window.game = new VirusGame.Game();
 };
