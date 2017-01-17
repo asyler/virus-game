@@ -1,9 +1,16 @@
 ///<reference path='node.d.ts'/>
-import http = require("http");
 
-http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello World\n');
-}).listen(1337, '127.0.0.1');
+let express = require('express');
+let app = express();
+let http = require('http').Server(app);
+let path = require('path');
 
-console.log('Server running at http://127.0.0.1:1337/');
+app.get('/', function(req, res){
+    res.sendFile(path.resolve(__dirname + '/../index.html'));
+});
+
+app.use(express.static(path.resolve(__dirname + '/../')));
+
+http.listen(process.env.PORT || 3003, function(){
+    console.log('listening on *:'+process.env.PORT);
+});
