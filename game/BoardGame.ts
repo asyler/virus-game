@@ -33,7 +33,7 @@ module VirusGame {
                     this.addCell(row, col);
                 }
             }
-            this.board.align(10, 10, 38, 36);
+            this.board.align(10, 10, 40, 40);
             this.board.alignIn(this.world.bounds, Phaser.CENTER);
         }
 
