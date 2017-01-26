@@ -6,7 +6,7 @@
     "preserveConstEnums": true,
     "target": "es6",
     "out": "server/server_app.js",
-    "outDir": "server/",
+    "outDir": "./",
     "sourceMap": true
   },
   "include": [
