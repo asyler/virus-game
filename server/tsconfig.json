@@ -5,7 +5,7 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "target": "es6",
-    "out": "server/server_app.js",
+    "out": "server_app.js",
     "outDir": "./",
     "sourceMap": true
   },

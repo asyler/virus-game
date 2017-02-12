@@ -22,7 +22,6 @@ module VirusGame {
                 if (first_player!=this.id) {
                     let state = <BoardGame>(window.game.state.getCurrentState());
                     state.current_player_number = 1;
-                    state.up
                 }
 
             });

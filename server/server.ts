@@ -11,6 +11,15 @@ let app = express();
 let server = http.createServer(app);
 let basepath = path.resolve(__dirname+'/../');
 
+let mysql      = require('mysql');
+let connection = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'root',
+    password : 'w9DllBJj',
+    database : 'test'
+});
+connection.connect();
+
 let clients : {[id: string] : SocketIO.Socket} = {};
 
 server.listen(gameport);
@@ -19,6 +28,10 @@ console.log('Listening on port ' + gameport );
 
 app.get( '/', function( req, res ){
     res.sendFile( '/index.html' , { root:basepath });
+});
+
+app.get('/test', function (req, res) {
+    res.sendFile('/test.html', { root: basepath });
 });
 
 app.get( '/*' , function( req, res, next ) {
@@ -45,6 +58,13 @@ sio.sockets.on('connection', function (client) {
 
     client.on('m', function(m) {
         game_server.onMessage(client, m);
+    });
+
+    client.on('mysql_test', function(m) {
+        connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+            if (error) throw error;
+            client.emit('mysql_test_results', results);
+        });
     });
 
     client.on('player move', function(game, row, col) {
