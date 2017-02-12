@@ -20,7 +20,7 @@ module VirusGame {
 
             this.socket.on('start game', function (first_player) {
                 if (first_player!=this.id) {
-                    let state = <BoardGame>(window.game.state.getCurrentState());
+                    let state = <BoardGame>((<any>window).game.state.getCurrentState());
                     state.current_player_number = 1;
                 }
 
@@ -28,7 +28,7 @@ module VirusGame {
 
             this.socket.on('player move', function (userid, gameid, row, col) {
                 if (gameid==_this.active_game && userid!=_this.id) {
-                    let state = <BoardGame>(window.game.state.getCurrentState());
+                    let state = <BoardGame>((<any>window).game.state.getCurrentState());
                     state.getCellByCoords(row,col).cellPlayed();
                 }
             });
