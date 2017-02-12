@@ -6,13 +6,11 @@
     "preserveConstEnums": true,
     "target": "es6",
     "out": "server_app.js",
-    "outDir": "./",
     "sourceMap": true
   },
   "include": [
-    "server/Game.ts",
-    "server/GameServer.ts",
-    "server/server.ts"
-    //"tsDefinitions/*"
+    "GameS.ts",
+    "GameServer.ts",
+    "server.ts"
   ]
 }

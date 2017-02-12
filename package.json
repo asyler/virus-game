@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/asyler/virus-game#readme",
   "dependencies": {
+    "express": "^4.14.1",
+    "mysql": "^2.13.0",
     "node-uuid": "^1.4.7",
     "socket.io": "^1.7.2"
   },
