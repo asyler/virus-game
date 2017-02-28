@@ -67,26 +67,14 @@ sio.sockets.on('connection', function (client) {
         });
     });
 	
-	client.on('create game', function(gameID: number, creationTime: number, usersCount: number) {
-        connection.query('INSERT INTO games (GameID, CreationTime, PlayerTurn, CellsLeft, UsersCount) VALUES (?, ?, 0, 1, ?);'
-			,[gameID], [creationTime], [usersCount], function (error, results, fields) {
-            if (error) throw error;
-            client.emit('create_game_results', true);
-        });
-    });
-	
-	client.on('host game', function(ownerID, usersCount, creationTime) {
-		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (?, ?, ?)', [creationTime, 0, 100, usersCount],
+	client.on('host game', function(ownerID, usersCount) {
+		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 100, usersCount],
 		function (error, results, fields) {
 				if (error) throw error;
 			});
-		connection.query('SELECT GameID FROM games WHERE (creationTime = ? AND playerTurn = ? AND cellsLeft = ? AND usersCount = ?', [creationTime, 0, 100, usersCount],
+		connection.query('INSERT INTO usersGames VALUES (?, (SELECT LAST_INSERT_ID() FROM games), ?)', [ownerID, 0],
 		function (error, results, fields) {
 			if (error) throw error;
-			connection.query('INSERT INTO usersGames VALUES (?, ?, ?)', [ownerID, results, 0],
-			function (error, results, fields) {
-				if (error) throw error;
-			});
 		});
 	});
 	
