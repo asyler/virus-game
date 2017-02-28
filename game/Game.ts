@@ -12,6 +12,7 @@ module VirusGame {
 
             this.state.start('Boot');
 
+
         }
 
     }

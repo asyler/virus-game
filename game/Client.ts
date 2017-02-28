@@ -34,6 +34,10 @@ module VirusGame {
             });
         }
 
+        host_game() {
+            this.socket.emit('host game', this.id, 2);
+        }
+
         player_move(row: number, col: number) {
             this.socket.emit('player move', this.active_game, row, col);
         }

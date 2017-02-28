@@ -15,7 +15,7 @@ let mysql      = require('mysql');
 let connection = mysql.createConnection({
     host     : 'localhost',
     user     : 'root',
-    password : '310893den',
+    password : 'w9DllBJj',
     database : 'virus'
 });
 connection.connect();
@@ -75,12 +75,12 @@ sio.sockets.on('connection', function (client) {
         });
     });
 	
-	client.on('host game', function(ownerID, usersCount, creationTime) {
-		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (?, ?, ?)', [creationTime, 0, 100, usersCount],
+	client.on('host game', function(ownerID, usersCount) {
+		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (NOW(), ?, ?)', [0, 100, usersCount],
 		function (error, results, fields) {
 				if (error) throw error;
 			});
-		connection.query('SELECT GameID FROM games WHERE (creationTime = ? AND playerTurn = ? AND cellsLeft = ? AND usersCount = ?', [creationTime, 0, 100, usersCount],
+		connection.query('SELECT GameID FROM games WHERE (creationTime = ? AND playerTurn = ? AND cellsLeft = ? AND usersCount = ?', [0, 100, usersCount],
 		function (error, results, fields) {
 			if (error) throw error;
 			connection.query('INSERT INTO usersGames VALUES (?, ?, ?)', [ownerID, results, 0],

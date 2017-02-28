@@ -5,28 +5,24 @@ module VirusGame {
         logo: Phaser.Text;
         button: Phaser.Button;
         button_text: Phaser.Text;
+        ui: UIPlugin.Plugin;
 
         create() {
+            this.ui = new UIPlugin.Plugin(this.game);
 
-            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), {
-                "fill":"#2ba6b7",
-                "font":"bold 60px Arial"
-            });
+            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), R.fonts['blue_1']);
             this.logo.anchor.set(0.5,0.5);
 
-            this.button = this.add.button(this.world.centerX, 200, 'ui', this.startGame, this, 'blue_button01','blue_button03','blue_button05');
-            this.button.anchor.set(0.5,0.5);
+            this.ui.add.button(this.world.centerX, 200, this.hostGame, this, R.strings['host_game'], R.fonts['white_1']);
+            this.ui.add.button(this.world.centerX, 250, this.joinGame, this, R.strings['join_game'], R.fonts['white_1']);
 
-            this.button_text = this.add.text(0,0,R.strings['start_game'], {
-                "fill": "#fefefe",
-                "font": "bold 24px Arial",
-                "stroke": "#000000",
-                "strokeThickness": 2
-            });
-            this.button_text.alignIn(this.button,Phaser.CENTER);
-
-            this.startGame(); // debug
+            //this.startGame(); // debug
         }
+
+        hostGame() {
+            client.host_game();
+        }
+        joinGame() {}
 
         startGame() {
             this.game.state.start('BoardGame', true, false);
