@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `UsersID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `UsersName` varchar(45) DEFAULT NULL,
+  `UserID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `UserName` varchar(45) DEFAULT NULL,
   `Password` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`UsersID`),
-  UNIQUE KEY `UsersID_UNIQUE` (`UsersID`)
+  PRIMARY KEY (`UserID`),
+  UNIQUE KEY `UsersID_UNIQUE` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-27  1:23:31
+-- Dump completed on 2017-03-05  2:13:50

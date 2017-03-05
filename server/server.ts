@@ -67,6 +67,23 @@ sio.sockets.on('connection', function (client) {
         });
     });
 	
+	client.on('user login', function(userName, password) {
+		connection.query('SELECT id FROM users WHERE UserName = ? AND Password = ?;', [userName, password], function (error, results, fields) {
+			if (error) throw error;
+			client.emit('user_login_results', results);
+		});
+	});
+	
+	client.on('user register', function(userName, password) {
+		connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, password], function (error, results, fields) {
+			if (error) throw error;
+			connection.query('SELECT LAST_INSERT_ID() FROM users;', function (error, results, fields) {
+				if (error) throw error;
+				client.emit('user_register_results', results);
+			});
+		});
+	});
+	
 	client.on('host game', function(ownerID, usersCount) {
 		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 100, usersCount],
 		function (error, results, fields) {
@@ -103,7 +120,7 @@ sio.sockets.on('connection', function (client) {
 	
 	// как определять выигравшего из 3х? 
 	client.on('finish game', function(gameID: number, winnerID: number) {
-        connection.query('INSERT INTO statistics (user1, user2, user1winuser2count) VALUES (?, (SELECT userID FROM usersGames WHERE gameID = ? AND userID IS NOT ?), ?) ' +
+        connection.query('INSERT INTO statistics (user1, user2, user1winuser2count) VALUES (?, (SELECT UserID FROM usersgames WHERE GameID = ? AND UserID IS NOT ?), ?) ' +
 						 'ON DUPLICATE KEY user1winuser2count = user1winuser2count + 1;', [winnerID, gameID, winnerID, 1], function (error, results, fields) {
 			if (error) throw error;
 		});

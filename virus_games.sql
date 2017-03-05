@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `games`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `games` (
-  `GameID` int(10) unsigned NOT NULL,
+  `GameID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `CreationTime` datetime DEFAULT NULL,
   `PlayerTurn` int(11) DEFAULT NULL,
   `CellsLeft` int(11) DEFAULT NULL,
   `UsersCount` int(11) DEFAULT NULL,
   PRIMARY KEY (`GameID`),
-  UNIQUE KEY `GamesID_UNIQUE` (`GameID`)
+  UNIQUE KEY `GameID_UNIQUE` (`GameID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-27  1:23:31
+-- Dump completed on 2017-03-05  2:13:50

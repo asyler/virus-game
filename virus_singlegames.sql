@@ -32,7 +32,8 @@ CREATE TABLE `singlegames` (
   KEY `UserID_idx` (`UserID`),
   KEY `GameID_indx` (`GameID`),
   KEY `UserID_indx` (`UserID`),
-  CONSTRAINT `UserIDConstraint` FOREIGN KEY (`UserID`) REFERENCES `users` (`UsersID`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `GameIDConstraint` FOREIGN KEY (`GameID`) REFERENCES `games` (`GameID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `UserIDConstraint` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-27  1:23:31
+-- Dump completed on 2017-03-05  2:13:50
