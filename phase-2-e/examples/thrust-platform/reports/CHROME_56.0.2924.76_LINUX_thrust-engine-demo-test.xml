@@ -5,32 +5,32 @@
 
   <testsuite name="thrust-engine-demo-test"
     errors="0" failures="0" hostname="" id="" package="thrust-engine-demo-test" skipped="0"
-    tests="4" time="6.095" timestamp="Sun, 05 Mar 2017 12:29:31 GMT">
+    tests="4" time="3.434" timestamp="Sun, 05 Mar 2017 17:32:08 GMT">
   
-    <testcase name="Phaser Game Boots Test" time="1.915" assertions="1">
+    <testcase name="Phaser Game Boots Test" time="2.200" assertions="1">
 
     
     </testcase>
   
-    <testcase name="Phaser Game Loads Test" time="0.6100" assertions="4">
+    <testcase name="Phaser Game Loads Test" time="0.5830" assertions="4">
 
     
 
     
-
-    
-
-    
-    </testcase>
-  
-    <testcase name="Login Test" time="0.5500" assertions="2">
 
     
 
     
     </testcase>
   
-    <testcase name="Resume Game Test" time="3.020" assertions="0">
+    <testcase name="Login Test" time="0.6200" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Resume Game Test" time="0.03100" assertions="0">
     </testcase>
   
   

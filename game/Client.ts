@@ -43,7 +43,7 @@ module VirusGame {
             });
 
             this.socket.on('load_games_results', function (games) {
-               console.log(games);
+                game.state.start('GamesList', true, false, games);
             });
         }
 

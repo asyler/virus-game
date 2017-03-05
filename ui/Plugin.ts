@@ -3,12 +3,29 @@
  */
 
 module UIPlugin {
+    export let _game: Phaser.Game;
+    export let objectFactory: ObjectFactory;
+
     class ObjectFactory {
         constructor(public game: Phaser.Game) {
         }
 
-        button(x:number, y:number, callback:() => any, scope, text:string, font): UIPlugin.Button {
-            return new UIPlugin.Button(this.game, x, y, callback, scope, text, font);
+        data_group(parent?: any, name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number): UIPlugin.DataGroup {
+            return new UIPlugin.DataGroup(_game, parent, name, addToStage, enableBody, physicsBodyType);
+        }
+
+        button(x: number, y: number, sprite: string, func, context, base_path, parent?, button_group?): UIPlugin.Button {
+            return new UIPlugin.Button(_game, x, y, sprite, func, context, base_path, parent, button_group);
+        }
+
+        text_button(x:number, y:number, callback:() => any, scope, text:string, font): UIPlugin.TextButton {
+            return new UIPlugin.TextButton(_game, x, y, callback, scope, text, font);
+        }
+
+        slider(x: number, y: number, key?: any, frame?: any, group?: Phaser.Group): UIPlugin.Slider {
+            let slider = new UIPlugin.Slider(_game, x, y, key, frame);
+            group.add(slider);
+            return slider;
         }
     };
 
@@ -16,7 +33,9 @@ module UIPlugin {
         add: ObjectFactory;
 
         constructor(public game: Phaser.Game) {
+            _game = game;
             this.add = new ObjectFactory(game);
+            objectFactory = this.add;
         }
     }
 }

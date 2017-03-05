@@ -12,6 +12,7 @@ R.strings = {
     resume_game: 'Resume game',
     login: 'Login',
     register: 'Register',
+    'game#': 'Game #',
     player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",
     game_over: (player_color) => "Game Over for " + player_color.toString() + " player"
 }

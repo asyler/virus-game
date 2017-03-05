@@ -7,15 +7,17 @@ module VirusGame {
         button_text: Phaser.Text;
         ui: UIPlugin.Plugin;
 
-        create() {
+        preload() {
             this.ui = new UIPlugin.Plugin(this.game);
+        }
 
+        create() {
             this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), R.fonts['blue_1']);
             this.logo.anchor.set(0.5,0.5);
 
-            this.ui.add.button(this.world.centerX, 200, this.createGame, this, R.strings['create_game'], R.fonts['white_1']);
-            this.ui.add.button(this.world.centerX, 250, this.joinGame, this, R.strings['join_game'], R.fonts['white_1']);
-            this.ui.add.button(this.world.centerX, 300, this.resumeGame, this, R.strings['resume_game'], R.fonts['white_1']);
+            this.ui.add.text_button(this.world.centerX, 200, this.createGame, this, R.strings['create_game'], R.fonts['white_1']);
+            this.ui.add.text_button(this.world.centerX, 250, this.joinGame, this, R.strings['join_game'], R.fonts['white_1']);
+            this.ui.add.text_button(this.world.centerX, 300, this.resumeGame, this, R.strings['resume_game'], R.fonts['white_1']);
 
             //this.startGame(); // debug
         }

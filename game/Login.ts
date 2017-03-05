@@ -42,8 +42,8 @@ module VirusGame {
                 this.login();
             }, this];
 
-            this.ui.add.button(415, 315, this.login, this, R.strings['login'], R.fonts['white_1']);
-            this.ui.add.button(415, 370, this.register, this, R.strings['register'], R.fonts['white_1']);
+            this.ui.add.text_button(415, 315, this.login, this, R.strings['login'], R.fonts['white_1']);
+            this.ui.add.text_button(415, 370, this.register, this, R.strings['register'], R.fonts['white_1']);
         }
 
         login() {
