@@ -81,7 +81,7 @@ module VirusGame {
         }
 
         load_my_games() {
-            this.socket.emit('load my games');
+            this.socket.emit('load my games', this.user_id);
         }
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="4">
+
+  <testsuite name="thrust-engine-demo-test"
+    errors="0" failures="0" hostname="" id="" package="thrust-engine-demo-test" skipped="0"
+    tests="4" time="0.000" timestamp="Sat, 06 Feb 2016 06:26:27 GMT">
+  
+    <testcase name="Phaser Game Boots Test" time="44.51" assertions="1">
+
+    
+    </testcase>
+  
+    <testcase name="Phaser Game Loads Test" time="0.7590" assertions="4">
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="E2E Actors are avaialable to test" time="6.373" assertions="4">
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Demo Player Control from Tests" time="26.17" assertions="0">
+    </testcase>
+  
+  
+  </testsuite>
+</testsuites>

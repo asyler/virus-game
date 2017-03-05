@@ -113,9 +113,17 @@ sio.sockets.on('connection', function (client) {
 			});
 		});
 	});
-	
+
+	client.on('load joinable games', function(userID: number) {
+		connection.query('SELECT games.GameID FROM games LEFT JOIN usersgames ON games.GameID=usersgames.GameID AND usersgames.UserID = ? WHERE usersgames.GameID IS NULL',
+			[userID], function (error, results, fields) {
+			if (error) throw error;
+			client.emit('load_games_results', results);
+		});
+	});
+
 	client.on('load my games', function(userID: number) {
-        connection.query('SELECT GameID FROM games WHERE UserID = ?;', [userID], function (error, results, fields) {
+        connection.query('SELECT GameID FROM usersgames WHERE UserID = ?;', [userID], function (error, results, fields) {
             if (error) throw error;
             client.emit('load_games_results', results);
         });
