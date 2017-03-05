@@ -42,13 +42,20 @@ module VirusGame {
                 this.login();
             }, this];
 
-            this.ui.add.button(this.world.centerX+30, 320, this.login, this, R.strings['login'], R.fonts['white_1']);
+            this.ui.add.button(415, 315, this.login, this, R.strings['login'], R.fonts['white_1']);
+            this.ui.add.button(415, 370, this.register, this, R.strings['register'], R.fonts['white_1']);
         }
 
         login() {
             let login = this.loginInput.value;
             let password = this.passInput.value;
             client.login(login, password);
+        }
+
+        register() {
+            let login = this.loginInput.value;
+            let password = this.passInput.value;
+            client.register(login, password);
         }
 
     }

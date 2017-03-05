@@ -34,11 +34,24 @@ module VirusGame {
                 }
             });
 
-            this.socket.on('logger', function (user_id) {
-               this.user_id = user_id;
+            this.socket.on('user_login_results', function (user) {
+                _this.perform_login(user);
+            });
+
+            this.socket.on('user_register_results', function (user) {
+                _this.perform_login(user);
             });
         }
 
+        // handle server response
+        perform_login(user) {
+            if (user.length==1) {
+                this.user_id = user[0].id;
+                game.state.start('MainMenu', true, false);
+            }
+        }
+
+        // send to server
         host_game() {
             this.socket.emit('host game', this.user_id, 2);
         }
@@ -56,7 +69,11 @@ module VirusGame {
         }
 
         login(login:string, password:string) {
-            this.socket.emit('login', login, password);
+            this.socket.emit('user login', login, password);
+        }
+
+        register(login:string, password:string) {
+            this.socket.emit('user register', login, password);
         }
     }
 }

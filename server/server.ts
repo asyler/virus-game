@@ -68,7 +68,7 @@ sio.sockets.on('connection', function (client) {
     });
 	
 	client.on('user login', function(userName, password) {
-		connection.query('SELECT id FROM users WHERE UserName = ? AND Password = ?;', [userName, password], function (error, results, fields) {
+		connection.query('SELECT UserID as id FROM users WHERE UserName = ? AND Password = ?;', [userName, password], function (error, results, fields) {
 			if (error) throw error;
 			client.emit('user_login_results', results);
 		});
@@ -77,7 +77,7 @@ sio.sockets.on('connection', function (client) {
 	client.on('user register', function(userName, password) {
 		connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, password], function (error, results, fields) {
 			if (error) throw error;
-			connection.query('SELECT LAST_INSERT_ID() FROM users;', function (error, results, fields) {
+			connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
 				if (error) throw error;
 				client.emit('user_register_results', results);
 			});
