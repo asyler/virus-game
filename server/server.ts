@@ -85,7 +85,7 @@ sio.sockets.on('connection', function (client) {
 			bcrypt.hash(password, salt, function(err, hash) {
 				connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
 					if (error) throw error;
-					connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
+                    connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
 						if (error) throw error;
 						client.emit('user_register_results', results);
 					});
@@ -98,11 +98,11 @@ sio.sockets.on('connection', function (client) {
 		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 100, usersCount],
 		function (error, results, fields) {
 				if (error) throw error;
+                connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [ownerID, results.insertId, 0],
+                    function (error, results, fields) {
+                        if (error) throw error;
+                    });
 			});
-		connection.query('INSERT INTO usersgames VALUES (?, (SELECT LAST_INSERT_ID() FROM games), ?)', [ownerID, 0],
-		function (error, results, fields) {
-			if (error) throw error;
-		});
 	});
 	
 	client.on('join game', function(gameID: number) {
