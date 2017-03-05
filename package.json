@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/asyler/virus-game#readme",
   "dependencies": {
+    "@orange-games/phaser-input": "2.0.2",
     "express": "^4.14.1",
     "mysql": "^2.13.0",
     "node-uuid": "^1.4.7",

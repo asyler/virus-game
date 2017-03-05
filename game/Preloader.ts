@@ -27,7 +27,7 @@ module VirusGame {
 
         startMainMenu() {
 
-            this.game.state.start('MainMenu', true, false);
+            this.game.state.start('Login', true, false);
 
         }
 

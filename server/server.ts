@@ -72,7 +72,7 @@ sio.sockets.on('connection', function (client) {
 		function (error, results, fields) {
 				if (error) throw error;
 			});
-		connection.query('INSERT INTO usersGames VALUES (?, (SELECT LAST_INSERT_ID() FROM games), ?)', [ownerID, 0],
+		connection.query('INSERT INTO usersgames VALUES (?, (SELECT LAST_INSERT_ID() FROM games), ?)', [ownerID, 0],
 		function (error, results, fields) {
 			if (error) throw error;
 		});
@@ -81,7 +81,7 @@ sio.sockets.on('connection', function (client) {
 	client.on('join game', function(gameID: number) {
 		connection.query('SELECT MAX(userState) FROM usersGames WHERE GameID = ?;', [gameID], function (error, results, fields) {
 			if (error) throw error;
-			connection.query('INSERT INTO usersGames VALUES (?, ?, ?)', [client.userID, gameID, results + 1], function (error, results, fields) {
+			connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [client.userID, gameID, results + 1], function (error, results, fields) {
 				if (error) throw error;
 			});
 		});

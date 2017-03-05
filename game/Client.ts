@@ -3,6 +3,7 @@ module VirusGame {
         private id: string;
         private socket: SocketIOClient.Socket;
         active_game: string;
+        private user_id: number;
         constructor() {
             let _this = this;
 
@@ -32,10 +33,14 @@ module VirusGame {
                     state.getCellByCoords(row,col).cellPlayed();
                 }
             });
+
+            this.socket.on('logger', function (user_id) {
+               this.user_id = user_id;
+            });
         }
 
         host_game() {
-            this.socket.emit('host game', this.id, 2);
+            this.socket.emit('host game', this.user_id, 2);
         }
 
         player_move(row: number, col: number) {
@@ -48,6 +53,10 @@ module VirusGame {
 
         findGame() {
             this.emit('findGame');
+        }
+
+        login(login:string, password:string) {
+            this.socket.emit('login', login, password);
         }
     }
 }
