@@ -73,6 +73,7 @@ module VirusGame {
         }
 
         register(login:string, password:string) {
+            var bcrypt = dcodeIO.bcrypt;
             this.socket.emit('user register', login, password);
         }
     }

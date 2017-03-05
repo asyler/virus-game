@@ -10,6 +10,8 @@ let path = require('path');
 let app = express();
 let server = http.createServer(app);
 let basepath = path.resolve(__dirname+'/../');
+let bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 let mysql      = require('mysql');
 let connection = mysql.createConnection({
@@ -68,18 +70,26 @@ sio.sockets.on('connection', function (client) {
     });
 	
 	client.on('user login', function(userName, password) {
-		connection.query('SELECT UserID as id FROM users WHERE UserName = ? AND Password = ?;', [userName, password], function (error, results, fields) {
+		connection.query('SELECT UserID as id, password FROM users WHERE UserName = ?', [userName], function (error, results, fields) {
 			if (error) throw error;
-			client.emit('user_login_results', results);
+				if (results.length>0)
+					bcrypt.compare(password, results[0]['password'], function(err, res) {
+						if (res)
+							client.emit('user_login_results', results);
+					});
 		});
 	});
 	
 	client.on('user register', function(userName, password) {
-		connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, password], function (error, results, fields) {
-			if (error) throw error;
-			connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
-				if (error) throw error;
-				client.emit('user_register_results', results);
+		bcrypt.genSalt(saltRounds, function(err, salt) {
+			bcrypt.hash(password, salt, function(err, hash) {
+				connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
+					if (error) throw error;
+					connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
+						if (error) throw error;
+						client.emit('user_register_results', results);
+					});
+				});
 			});
 		});
 	});
