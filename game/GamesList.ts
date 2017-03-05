@@ -4,6 +4,8 @@ module VirusGame {
         ui: UIPlugin.Plugin;
         private items;
         public sprite = "scrollbar";
+        public ddd: any;
+        private ddd2;
 
         init(games) {
             this.items = games;
@@ -21,22 +23,29 @@ module VirusGame {
                 container: gr,
                 bg: new Phaser.Rectangle(0,0,580,260),
                 show_item: this.show_game,
-                position: [149,168],
+                position: [100,170],
                 slider_position: [590,0],
                 cols: 1,
-                item_size: [194,84],
-                items_offset: [0,5]
+                item_size: [190,50],
+                items_offset: [0,20]
             });
             layout.update_items(this.items);
+            //layout.update_items([{},{},{},{},{},{},{},{}]);
+            this.ddd2 = layout.items_group.mask;
         }
 
         show_game(item, data, cell) {
-            this.ui.add.text_button(0, 0, this.open_game, this, R.strings['game#']+data.GameID, R.fonts['white_1'])
-                .alignIn(cell,Phaser.CENTER);
+            let button = this.ui.add.text_button(0, 0, this.open_game, this, R.strings['game#']+data.GameID, R.fonts['white_1'], item);
         }
 
         open_game() {}
 
+
+        update() {
+            if (this.ddd2) {
+                // game.debug.spriteBounds(<Phaser.Sprite> this.ddd2, 'rgba(0,255,0,0.3)');
+            }
+        }
     }
 
 }

@@ -18,7 +18,7 @@ module UIPlugin {
     export class SliderLayout extends Phaser.Group {
         private bg: Phaser.Image;
         private grid_cell: Phaser.Rectangle;
-        private items_group: DataGroup;
+        public items_group: Phaser.Group;
         private _slider: Slider;
         private scroll_tween: Phaser.Tween;
         private scroll_slider_tween: Phaser.Tween;
@@ -41,7 +41,7 @@ module UIPlugin {
 
             let bg = typeof(config.bg) == typeof('') ? _game.add.image(0, 0, config.parent.sprite, config.bg, this) : config.bg;
 
-            let items_group = objectFactory.data_group(this);
+            let items_group = _game.add.group(this);
             let grid_cell = new Phaser.Rectangle(0, 0, config.item_size[0], config.item_size[1]);
 
             this.bg = bg;
@@ -52,6 +52,7 @@ module UIPlugin {
                 config.container.cameraOffset.x + config.position[0],
                 config.container.cameraOffset.y + config.position[1]);
             mask.fixedToCamera = true;
+            mask.beginFill(0xffffff);
             mask.drawRect(config.items_offset[0], config.items_offset[1],
                 bg.width - 2 * config.items_offset[0], bg.height - 2 * config.items_offset[1]);
             items_group.mask = mask;
@@ -108,7 +109,7 @@ module UIPlugin {
 
             let item_group;
             for (let item_data of data) {
-                item_group = objectFactory.data_group(items_group);
+                item_group = _game.add.group(items_group);
             };
             items_group.align(config.cols, -1, config.item_size[0], config.item_size[1]);
             items_group.y = config.items_offset[1];

@@ -24,7 +24,8 @@ module.exports = {
       .waitForState('MainMenu', 3000);
   },
 
-  'Resume Game Test' : function (client) {
+  // disabled
+  'Resume Game Test' : ''+function (client) {
     client
         .callFunction('resumeGame')
 
