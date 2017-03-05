@@ -7,8 +7,9 @@
 R.strings = {
     game_name: 'Virus',
     start_game: 'Start game',
-    host_game: 'Host game',
+    create_game: 'Create game',
     join_game: 'Join game',
+    resume_game: 'Resume game',
     login: 'Login',
     register: 'Register',
     player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",

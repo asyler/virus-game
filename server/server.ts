@@ -114,8 +114,8 @@ sio.sockets.on('connection', function (client) {
 		});
 	});
 	
-	client.on('load games', function() {
-        connection.query('SELECT GameID FROM games;', function (error, results, fields) {
+	client.on('load my games', function(userID: number) {
+        connection.query('SELECT GameID FROM games WHERE UserID = ?;', [userID], function (error, results, fields) {
             if (error) throw error;
             client.emit('load_games_results', results);
         });

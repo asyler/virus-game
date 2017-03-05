@@ -41,6 +41,10 @@ module VirusGame {
             this.socket.on('user_register_results', function (user) {
                 _this.perform_login(user);
             });
+
+            this.socket.on('load_games_results', function (games) {
+               console.log(games);
+            });
         }
 
         // handle server response
@@ -73,8 +77,11 @@ module VirusGame {
         }
 
         register(login:string, password:string) {
-            var bcrypt = dcodeIO.bcrypt;
             this.socket.emit('user register', login, password);
+        }
+
+        load_my_games() {
+            this.socket.emit('load my games');
         }
     }
 }
