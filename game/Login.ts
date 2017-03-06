@@ -8,8 +8,28 @@ module VirusGame {
         private passInput;
 
         preload() {
+            this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
             this.ui = new UIPlugin.Plugin(this.game);
             this.game.add.plugin(PhaserInput.Plugin as any,[]);
+
+            let state_manager = <StateManager>game.state;
+            state_manager.history = [];
+            game.state.onStateChange.add(function (newState, oldState) {
+                if (!state_manager.returning) {
+                    let s = [newState];
+                    if (game.state.getCurrentState()['__data'])
+                        s.push(game.state.getCurrentState()['__data']);
+                    this.history.push(s);
+                }
+                else
+                    state_manager.returning = false;
+            }, game.state);
+            state_manager.back = function () {
+                state_manager.history.pop();
+                let last_state = state_manager.history[state_manager.history.length-1];
+                state_manager.returning = true;
+                game.state.start(last_state[0], true, false, last_state.length>0 ? last_state[1] : null);
+            };
         }
 
         create() {

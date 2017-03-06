@@ -11,7 +11,11 @@ module VirusGame {
         players: Array<BoardPlayer>;
         infoPanel: InfoPanel;
 
-        colors: Array<string> = ['blue', 'yellow'];
+        static colors: Array<string> = ['blue', 'yellow'];
+
+        preload() {
+            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
+        }
 
         create() {
             this.addPlayers();
@@ -60,7 +64,7 @@ module VirusGame {
         private addPlayers() {
             this.players = [];
             for (let i = 0; i < this.number_of_players; i++) {
-                this.players.push(new BoardPlayer(this.colors[i], i==0));
+                this.players.push(new BoardPlayer(BoardGame.colors[i], i==0));
             }
         }
 

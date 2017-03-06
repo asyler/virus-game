@@ -14,6 +14,7 @@ module VirusGame {
             this.state.add('Login', Login, false);
             this.state.add('MainMenu', MainMenu, false);
             this.state.add('GamesList', GamesList, false);
+            this.state.add('GamePreview', GamePreview, false);
             this.state.add('BoardGame', BoardGame, false);
 
             this.state.start('Boot');

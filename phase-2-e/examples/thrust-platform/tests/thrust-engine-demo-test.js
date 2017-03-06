@@ -24,10 +24,22 @@ module.exports = {
       .waitForState('MainMenu', 3000);
   },
 
-  // disabled
   'Resume Game Test' : ''+function (client) {
     client
         .callFunction('resumeGame')
+
+  },
+
+  'Join Game Test' : function (client) {
+    client
+        .callFunction('joinGame')
+        .waitForState('GamesList', 3000)
+        .callFunction('open_game',{
+            data: {
+              id: 6
+            }
+        })
+        .waitForState('GamePreview', 3000)
 
   }
 

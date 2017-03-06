@@ -15,7 +15,6 @@ module VirusGame {
             });
 
             this.socket.on('added to game', function (game_id) {
-               console.log(game_id);
                 _this.active_game = game_id;
             });
 
@@ -43,8 +42,17 @@ module VirusGame {
             });
 
             this.socket.on('load_games_results', function (games) {
-                game.state.start('GamesList', true, false, games);
+                (<GamesList>game.state.getCurrentState()).setGames(games);
             });
+
+            this.socket.on('load_game_info', function (info) {
+                (<GamePreview>game.state.getCurrentState()).setInfo(info);
+            });
+
+            this.socket.on('load_game_players', function (players) {
+                (<GamePreview>game.state.getCurrentState()).setPlayers(players);
+            });
+
         }
 
         // handle server response
@@ -82,6 +90,15 @@ module VirusGame {
 
         load_my_games() {
             this.socket.emit('load my games', this.user_id);
+        }
+
+        load_joinable_games() {
+            this.socket.emit('load joinable games', this.user_id);
+        }
+
+        preview_game(GameID:number) {
+            this.socket.emit('load game info', GameID);
+            this.socket.emit('load game players', GameID);
         }
     }
 }

@@ -115,7 +115,7 @@ sio.sockets.on('connection', function (client) {
 	});
 
 	client.on('load joinable games', function(userID: number) {
-		connection.query('SELECT games.GameID FROM games LEFT JOIN usersgames ON games.GameID=usersgames.GameID AND usersgames.UserID = ? WHERE usersgames.GameID IS NULL',
+		connection.query('SELECT games.GameID, UsersCount, (SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID) as PlayersCount FROM games LEFT JOIN usersgames ON games.GameID=usersgames.GameID AND usersgames.UserID = ? WHERE usersgames.GameID IS NULL',
 			[userID], function (error, results, fields) {
 			if (error) throw error;
 			client.emit('load_games_results', results);
@@ -123,18 +123,25 @@ sio.sockets.on('connection', function (client) {
 	});
 
 	client.on('load my games', function(userID: number) {
-        connection.query('SELECT GameID FROM usersgames WHERE UserID = ?;', [userID], function (error, results, fields) {
+        connection.query('SELECT games.GameID, UsersCount FROM usersgames INNER JOIN games ON games.GameID=usersgames.GameID WHERE UserID = ? AND UsersCount=(SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID)', [userID], function (error, results, fields) {
             if (error) throw error;
             client.emit('load_games_results', results);
         });
     });
 	
-	client.on('load game by id', function(gameID: number) {
+	client.on('load game info', function(gameID: number) {
         connection.query('SELECT * FROM games WHERE GameID = ?;', [gameID], function (error, results, fields) {
             if (error) throw error;
-            client.emit('load_game_by_id_results', results);
+            client.emit('load_game_info', results[0]);
         });
     });
+
+	client.on('load game players', function (gameID: number) {
+		connection.query('SELECT users.UserID, UserName FROM usersgames INNER JOIN users ON usersgames.UserID = users.UserID WHERE GameID=? ORDER BY UserState ASC;', [gameID], function (error, results, fields) {
+			if (error) throw error;
+			client.emit('load_game_players', results);
+		});
+	});
 	
 	// как определять выигравшего из 3х? 
 	client.on('finish game', function(gameID: number, winnerID: number) {

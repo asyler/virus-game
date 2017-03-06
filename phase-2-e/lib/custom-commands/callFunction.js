@@ -1,11 +1,11 @@
-exports.command = function(f) {
+exports.command = function(f,param1) {
     this.execute(
-        function(f) {
+        function(f,param1) {
             var game = window.Phaser.GAMES[0];
             var state = game.state.getCurrentState();
-            state[f].apply();
+            state[f].apply(state, [param1]);
         },
-        [f],
+        [f,param1],
         function(result) {}
     );
     return this;

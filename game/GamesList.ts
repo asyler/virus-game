@@ -1,21 +1,32 @@
 module VirusGame {
 
-    export class GamesList extends Phaser.State {
+    export class GamesList extends DBState {
         ui: UIPlugin.Plugin;
         private items;
         public sprite = "scrollbar";
-        public ddd: any;
-        private ddd2;
+        private layout: UIPlugin.SliderLayout;
+        private type: string;
 
-        init(games) {
-            this.items = games;
+        _init(type) {
+            this.type = type;
+
         }
 
         preload() {
+            this.load.atlasJSONHash('scrollbar', 'assets/scrollbar.png', 'assets/scrollbar.json');
             this.ui = new UIPlugin.Plugin(this.game);
+            this.wait(1);
+            if (this.type=='join')
+                client.load_joinable_games();
+            else if (this.type=='resume')
+                client.load_my_games();
+            let back = game.add.button(50,50,'arrow_back',function () {
+                (<StateManager>game.state).back();
+            });
+            back.width = back.height = 40;
         }
 
-        create() {
+        _create() {
             let gr = game.add.group();
 
             let layout = new UIPlugin.SliderLayout({
@@ -30,21 +41,23 @@ module VirusGame {
                 items_offset: [0,20]
             });
             layout.update_items(this.items);
-            //layout.update_items([{},{},{},{},{},{},{},{}]);
-            this.ddd2 = layout.items_group.mask;
+        }
+
+        setGames(games) {
+            this.items = games;
+            this.done();
         }
 
         show_game(item, data, cell) {
-            let button = this.ui.add.text_button(0, 0, this.open_game, this, R.strings['game#']+data.GameID, R.fonts['white_1'], item);
+            let gameInfo = R.strings['game#']+data.GameID;
+            if (data.PlayersCount)
+                gameInfo += ' ('+data.PlayersCount+'/'+data.UsersCount+')';
+            let button = this.ui.add.text_button(0, 0, this.open_game, this, gameInfo, R.fonts['white_1'], item);
+            button.button.data.id = data.GameID;
         }
 
-        open_game() {}
-
-
-        update() {
-            if (this.ddd2) {
-                // game.debug.spriteBounds(<Phaser.Sprite> this.ddd2, 'rgba(0,255,0,0.3)');
-            }
+        open_game(b) {
+            game.state.start('GamePreview', true, false, b.data.id);
         }
     }
 

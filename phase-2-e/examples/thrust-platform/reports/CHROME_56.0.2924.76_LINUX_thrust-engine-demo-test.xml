@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuites errors="0"
             failures="0"
-            tests="3">
+            tests="4">
 
   <testsuite name="thrust-engine-demo-test"
     errors="0" failures="0" hostname="" id="" package="thrust-engine-demo-test" skipped="0"
-    tests="3" time="3.209" timestamp="Sun, 05 Mar 2017 19:30:40 GMT">
+    tests="4" time="3.148" timestamp="Mon, 06 Mar 2017 19:23:54 GMT">
   
-    <testcase name="Phaser Game Boots Test" time="2.084" assertions="1">
+    <testcase name="Phaser Game Boots Test" time="1.963" assertions="1">
 
     
     </testcase>
   
-    <testcase name="Phaser Game Loads Test" time="0.5880" assertions="4">
+    <testcase name="Phaser Game Loads Test" time="0.5760" assertions="4">
 
     
 
@@ -23,7 +23,14 @@
     
     </testcase>
   
-    <testcase name="Login Test" time="0.5370" assertions="2">
+    <testcase name="Login Test" time="0.5350" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Join Game Test" time="0.07400" assertions="2">
 
     
 

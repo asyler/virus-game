@@ -8,6 +8,7 @@ module VirusGame {
         ui: UIPlugin.Plugin;
 
         preload() {
+            this.load.image('arrow_back','assets/arrowLeft.png');
             this.ui = new UIPlugin.Plugin(this.game);
         }
 
@@ -28,10 +29,12 @@ module VirusGame {
         createGame() {
             client.host_game();
         }
-        joinGame() {}
+        joinGame() {
+            this.game.state.start('GamesList', true, false, 'join');
+        }
 
         resumeGame() {
-            client.load_my_games();
+            this.game.state.start('GamesList', true, false, 'resume');
         }
 
         startGame() {

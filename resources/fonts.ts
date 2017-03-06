@@ -14,5 +14,13 @@ R.fonts = {
         "font": "bold 24px Arial",
         "stroke": "#000000",
         "strokeThickness": 2
+    },
+    player_name_1: function (color: string) {
+        return {
+            "fill": color,
+            "font": "bold 24px Arial",
+            "stroke": "#000000",
+            "strokeThickness": 2
+        };
     }
 }
