@@ -49,8 +49,6 @@ var sio = _io.listen(server);
 //     });
 // });
 
-let game_server = new GameServer();
-
 sio.sockets.on('connection', function (client) {
     client.userid = UUID();
     //console.log('player ' + client.userid + ' connected');
@@ -58,18 +56,7 @@ sio.sockets.on('connection', function (client) {
     clients[client.userid] = client;
     client.emit('onConnected', { id: client.userid } );
 
-    client.on('m', function(m) {
-        game_server.onMessage(client, m);
-    });
-
-    client.on('mysql_test', function(m) {
-        connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-            if (error) throw error;
-            client.emit('mysql_test_results', results);
-        });
-    });
-	
-	client.on('user login', function(userName, password) {
+    client.on('user login', function(userName, password) {
 		connection.query('SELECT UserID as id, password FROM users WHERE UserName = ?', [userName], function (error, results, fields) {
 			if (error) throw error;
 				if (results.length>0)
@@ -95,7 +82,7 @@ sio.sockets.on('connection', function (client) {
 	});
 	
 	client.on('host game', function(ownerID, usersCount) {
-		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 100, usersCount],
+		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 1, usersCount],
 		function (error, results, fields) {
 				if (error) throw error;
                 connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [ownerID, results.insertId, 0],
@@ -105,11 +92,12 @@ sio.sockets.on('connection', function (client) {
 			});
 	});
 	
-	client.on('join game', function(gameID: number) {
-		connection.query('SELECT MAX(userState) FROM usersGames WHERE GameID = ?;', [gameID], function (error, results, fields) {
+	client.on('join game', function(userID: number, gameID: number) {
+		connection.query('SELECT MAX(userState) as state FROM usersgames WHERE GameID = ?;', [gameID], function (error, results, fields) {
 			if (error) throw error;
-			connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [client.userID, gameID, results + 1], function (error, results, fields) {
+			connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1], function (error, results, fields) {
 				if (error) throw error;
+				client.emit('joined', gameID);
 			});
 		});
 	});
@@ -142,6 +130,14 @@ sio.sockets.on('connection', function (client) {
 			client.emit('load_game_players', results);
 		});
 	});
+
+	client.on('load game board', function (gameID: number) {
+		client.join('game#'+gameID);
+		connection.query('SELECT * FROM singlegames WHERE GameID=?', [gameID], function (error, results, fields) {
+			if (error) throw error;
+			client.emit('load_game_board', results);
+		});
+	});
 	
 	// как определять выигравшего из 3х? 
 	client.on('finish game', function(gameID: number, winnerID: number) {
@@ -155,15 +151,15 @@ sio.sockets.on('connection', function (client) {
 		});
     });
 
-    client.on('player move', function(gameID, row, col, state, userID, cellsKilled, usersLost) {
-        game_server.onPlayerMove(client.userid, gameID, row, col);
-		connection.query('INSERT INTO singlegames VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, userID], function (error, results, fields) {
+    client.on('player move', function(userID, gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
+        connection.query('INSERT INTO singlegames VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, userID], function (error, results, fields) {
             if (error) throw error;
         });
-		connection.query('UPDATE games SET playerTurn=playerTurn+1, cellsLeft=cellsLeft-?, usersCount=usersCount-? WHERE GameID=?;', [cellsKilled, usersLost, gameID],
+		connection.query('UPDATE games SET playerTurn=?, cellsLeft=?, usersCount=usersCount-? WHERE GameID=?;', [currentPlayer, cellsLeft, usersLost, gameID],
 		function (error, results, fields) {
             if (error) throw error;
         });
+		sio.sockets.to('game#'+gameID).emit('player_move', userID, row, col, state);
     });
 
     client.on('disconnect', function () {

@@ -1,7 +1,6 @@
 module VirusGame {
 
     export class GamesList extends DBState {
-        ui: UIPlugin.Plugin;
         private items;
         public sprite = "scrollbar";
         private layout: UIPlugin.SliderLayout;
@@ -14,7 +13,6 @@ module VirusGame {
 
         preload() {
             this.load.atlasJSONHash('scrollbar', 'assets/scrollbar.png', 'assets/scrollbar.json');
-            this.ui = new UIPlugin.Plugin(this.game);
             this.wait(1);
             if (this.type=='join')
                 client.load_joinable_games();
@@ -52,7 +50,7 @@ module VirusGame {
             let gameInfo = R.strings['game#']+data.GameID;
             if (data.PlayersCount)
                 gameInfo += ' ('+data.PlayersCount+'/'+data.UsersCount+')';
-            let button = this.ui.add.text_button(0, 0, this.open_game, this, gameInfo, R.fonts['white_1'], item);
+            let button = ui.add.text_button(0, 0, this.open_game, this, gameInfo, R.fonts['white_1'], item);
             button.button.data.id = data.GameID;
         }
 

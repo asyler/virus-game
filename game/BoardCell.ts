@@ -21,22 +21,37 @@ module VirusGame {
             }, this);
         }
 
-        cellPlayed() {
+        setState(state, player) {
+            this.state = state;
+            this.player = player;
+            switch (this.state) {
+                case CellState.Alive:
+                    this.frameName = this.player.color + '_boxCross';
+                    break;
+                case CellState.Dead:
+                    this.frameName = this.player.color + '_boxCheckmark';
+                    break;
+            }
+        }
+
+        cellPlayed(opponentTurn?) {
             if (this.board_game.isTurnLegal(this.row, this.col)) {
                 switch (this.state) {
                     case CellState.Empty:
-                        client.player_move(this.row,this.col);
                         this.frameName = this.board_game.current_player_color + '_boxCross';
                         this.state = CellState.Alive;
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
+                        if (!opponentTurn)
+                            client.player_move(this.board_game.id,this.row,this.col,1,this.board_game.left_turn_cells,this.board_game.current_player_number,0);
                         break;
                     case CellState.Alive:
-                        client.player_move(this.row,this.col);
                         this.frameName = this.board_game.current_player_color + '_boxCheckmark';
                         this.state = CellState.Dead;
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
+                        if (!opponentTurn)
+                            client.player_move(this.board_game.id,this.row,this.col,2,this.board_game.left_turn_cells,this.board_game.current_player_number,0);
                         break;
                     case CellState.Dead:
                         break;

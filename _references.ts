@@ -1,0 +1,1 @@
+/// <reference path="game/ext/DBState.ts" />

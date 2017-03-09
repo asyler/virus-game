@@ -24,19 +24,27 @@ module.exports = {
       .waitForState('MainMenu', 3000);
   },
 
-  'Resume Game Test' : ''+function (client) {
+  'Resume Game Test' : function (client) {
     client
         .callFunction('resumeGame')
+        .waitForState('GamesList', 3000)
+        .callFunction('open_game',{
+          data: {
+            id: 5
+          }
+        })
+        .waitForState('GamePreview', 3000)
 
   },
 
-  'Join Game Test' : function (client) {
+
+  'Join Game Test' : ''+function (client) {
     client
         .callFunction('joinGame')
         .waitForState('GamesList', 3000)
         .callFunction('open_game',{
             data: {
-              id: 6
+              id: 5
             }
         })
         .waitForState('GamePreview', 3000)

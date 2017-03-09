@@ -13,6 +13,7 @@
     "tsDefinitions/phaser.d.ts",
     "tsDefinitions/socket.io-client.d.ts",
     "app.ts",
+    "_references.ts",
     "game/**/*.ts",
     "resources/resources.ts",
     "resources/fonts.ts",

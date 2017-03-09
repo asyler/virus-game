@@ -15,6 +15,8 @@ R.strings = {
     'game#': 'Game #',
     'player_count': 'Players',
     'players': 'Players',
+    'join': 'Join',
+    'play': 'Play',
     player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",
     game_over: (player_color) => "Game Over for " + player_color.toString() + " player"
 }

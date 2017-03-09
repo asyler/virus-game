@@ -3,18 +3,19 @@
 module VirusGame {
 
     export class Login extends Phaser.State {
-        ui: UIPlugin.Plugin;
         private loginInput;
         private passInput;
 
         preload() {
             this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
-            this.ui = new UIPlugin.Plugin(this.game);
             this.game.add.plugin(PhaserInput.Plugin as any,[]);
 
             let state_manager = <StateManager>game.state;
             state_manager.history = [];
             game.state.onStateChange.add(function (newState, oldState) {
+                if (newState==oldState)
+                    return;
+
                 if (!state_manager.returning) {
                     let s = [newState];
                     if (game.state.getCurrentState()['__data'])
@@ -63,9 +64,9 @@ module VirusGame {
             }, this];
 
             let gr = game.add.group();
-            this.ui.add.text_button(0, 315, this.login, this, R.strings['login'], R.fonts['white_1'],gr)
+            ui.add.text_button(0, 315, this.login, this, R.strings['login'], R.fonts['white_1'],gr)
                 .alignTo(this.passInput, Phaser.BOTTOM_CENTER, 8, 10);
-            this.ui.add.text_button(0, 370, this.register, this, R.strings['register'], R.fonts['white_1'],gr)
+            ui.add.text_button(0, 370, this.register, this, R.strings['register'], R.fonts['white_1'],gr)
                 .alignTo(this.passInput, Phaser.BOTTOM_CENTER, 8, 60);
         }
 
