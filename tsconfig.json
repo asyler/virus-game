@@ -11,9 +11,14 @@
   },
   "include": [
     "tsDefinitions/phaser.d.ts",
+    "tsDefinitions/socket.io-client.d.ts",
     "app.ts",
+    "_references.ts",
     "game/**/*.ts",
-    "resources/**/*.ts"
+    "resources/resources.ts",
+    "resources/fonts.ts",
+    "resources/strings.ts",
+    "ui/*.ts"
   ],
   "exclude": [
     "node_modules",

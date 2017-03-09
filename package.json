@@ -18,11 +18,15 @@
   },
   "homepage": "https://github.com/asyler/virus-game#readme",
   "dependencies": {
-    "express": "^4.14.0",
+    "@orange-games/phaser-input": "2.0.2",
+    "bcrypt": "^1.0.2",
+    "express": "^4.14.1",
+    "mysql": "^2.13.0",
     "node-uuid": "^1.4.7",
     "socket.io": "^1.7.2"
   },
   "devDependencies": {
+    "phase-2-e": "^0.2.0",
     "typings": "^2.1.0"
   }
 }

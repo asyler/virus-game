@@ -1,3 +1,7 @@
-window.onload = () => {
-    window.game = new VirusGame.Game();
-};
+module VirusGame {
+    declare var game;
+
+    window.onload = () => {
+        game = new VirusGame.Game();
+    };
+}

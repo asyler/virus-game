@@ -12,10 +12,6 @@ module VirusGame {
             this.preloadBar = this.add.sprite(200, 250, 'preloadBar');
             this.load.setPreloadSprite(this.preloadBar);
 
-            //  Load our actual games assets
-            this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
-            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
-
             client = new Client();
         }
 
@@ -27,7 +23,7 @@ module VirusGame {
 
         startMainMenu() {
 
-            this.game.state.start('MainMenu', true, false);
+            this.game.state.start('Login', true, false);
 
         }
 

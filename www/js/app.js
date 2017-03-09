@@ -1,14 +1,46 @@
-window.onload = () => {
-    window.game = new VirusGame.Game();
-};
+class DBState extends Phaser.State {
+    wait(n) {
+        let self = this;
+        this.wait_for_callbacks = n;
+        this.callbacks_returned = 0;
+        this.loadUpdate = function () {
+            self.create();
+        };
+    }
+    init(data) {
+        this.__data = data;
+        this._init(data);
+    }
+    done() {
+        this.callbacks_returned++;
+        this.create();
+    }
+    isDone() {
+        return this.callbacks_returned == this.wait_for_callbacks && this.load.hasLoaded;
+    }
+    create() {
+        if (this.isDone())
+            this._create();
+    }
+    _create() {
+    }
+    _init(data) {
+    }
+}
 var VirusGame;
 (function (VirusGame) {
+    window.onload = () => {
+        game = new VirusGame.Game();
+    };
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    var CellState;
     (function (CellState) {
         CellState[CellState["Empty"] = 0] = "Empty";
         CellState[CellState["Alive"] = 1] = "Alive";
         CellState[CellState["Dead"] = 2] = "Dead";
-    })(VirusGame.CellState || (VirusGame.CellState = {}));
-    var CellState = VirusGame.CellState;
+    })(CellState = VirusGame.CellState || (VirusGame.CellState = {}));
     ;
     class BoardCell extends Phaser.Image {
         constructor(row, col, board_game) {
@@ -27,22 +59,36 @@ var VirusGame;
                     this.cellPlayed();
             }, this);
         }
-        cellPlayed() {
+        setState(state, player) {
+            this.state = state;
+            this.player = player;
+            switch (this.state) {
+                case 1:
+                    this.frameName = this.player.color + '_boxCross';
+                    break;
+                case 2:
+                    this.frameName = this.player.color + '_boxCheckmark';
+                    break;
+            }
+        }
+        cellPlayed(opponentTurn) {
             if (this.board_game.isTurnLegal(this.row, this.col)) {
                 switch (this.state) {
                     case 0:
-                        VirusGame.client.player_move(this.row, this.col);
                         this.frameName = this.board_game.current_player_color + '_boxCross';
                         this.state = 1;
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
+                        if (!opponentTurn)
+                            VirusGame.client.player_move(this.board_game.id, this.row, this.col, 1, this.board_game.left_turn_cells, this.board_game.current_player_number, 0);
                         break;
                     case 1:
-                        VirusGame.client.player_move(this.row, this.col);
                         this.frameName = this.board_game.current_player_color + '_boxCheckmark';
                         this.state = 2;
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
+                        if (!opponentTurn)
+                            VirusGame.client.player_move(this.board_game.id, this.row, this.col, 2, this.board_game.left_turn_cells, this.board_game.current_player_number, 0);
                         break;
                     case 2:
                         break;
@@ -71,32 +117,70 @@ var VirusGame;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    class BoardGame extends Phaser.State {
-        constructor(...args) {
-            super(...args);
+    class BoardGame extends DBState {
+        constructor() {
+            super(...arguments);
             this.number_of_players = 2;
             this.activeCells = [];
             this.possibleMoves = [];
-            this.colors = ['blue', 'yellow'];
         }
-        create() {
+        _init(GameID) {
+            this.id = GameID;
+        }
+        preload() {
+            this.wait(3);
+            VirusGame.client.start_play(this.id);
+            let back = VirusGame.game.add.button(50, 50, 'arrow_back', function () {
+                VirusGame.game.state.back();
+            });
+            back.width = back.height = 40;
+            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
+        }
+        setInfo(data) {
+            this.game_info = data;
+            this.done();
+        }
+        setPlayers(data) {
+            this.players_list = data;
+            this.done();
+        }
+        setBoardData(data) {
+            this.board_state = data;
+            this.done();
+        }
+        _create() {
             this.addPlayers();
             this.initGame();
             this.drawBoard();
             this.drawInfo();
+            this.setBoardState();
         }
         drawInfo() {
             this.infoPanel = this.add.existing(new VirusGame.InfoPanel(this.game, this.world.centerX, 10));
             this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
         }
+        setBoardState() {
+            for (let cell of this.board_state) {
+                this.board_cells[cell['X']][cell['Y']].setState(cell['State'], this.players_dict[cell['UserID']]);
+                this.players_dict[cell['UserID']].is_first_turn = false;
+            }
+            this.current_player_number = this.game_info['PlayerTurn'];
+            this.left_turn_cells = this.game_info['CellsLeft'];
+            this.updateInfoPanel();
+            this.updateActiveRegion();
+            this.updatePossibleMoves();
+        }
         drawBoard() {
             this.board = this.add.group();
+            this.board_cells = [];
             for (let row = 0; row < 10; row++) {
+                this.board_cells.push([]);
                 for (let col = 0; col < 10; col++) {
-                    this.addCell(row, col);
+                    let cell = this.addCell(row, col);
+                    this.board_cells[row].push(cell);
                 }
             }
-            this.board.align(10, 10, 38, 36);
+            this.board.align(10, 10, 40, 40);
             this.board.alignIn(this.world.bounds, Phaser.CENTER);
         }
         addCell(row, col) {
@@ -104,6 +188,7 @@ var VirusGame;
             if (this.isTileOnEdge(row, col))
                 cell.makePossibleToMoveTo();
             this.board.add(cell);
+            return cell;
         }
         cellIndex(row, col) {
             let index = 10 * row + col;
@@ -117,8 +202,12 @@ var VirusGame;
         }
         addPlayers() {
             this.players = [];
-            for (let i = 0; i < this.number_of_players; i++) {
-                this.players.push(new VirusGame.BoardPlayer(this.colors[i], i == 0));
+            this.players_dict = {};
+            for (let i in this.players_list) {
+                let user_id = this.players_list[i]['UserID'];
+                let player = new VirusGame.BoardPlayer(user_id, BoardGame.colors[i]);
+                this.players.push(player);
+                this.players_dict[user_id] = player;
             }
         }
         initGame() {
@@ -134,7 +223,7 @@ var VirusGame;
         endTurn() {
             this.left_turn_cells--;
             this.checkTurnChange();
-            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
+            this.updateInfoPanel();
             this.updateActiveRegion();
             this.updatePossibleMoves();
         }
@@ -257,16 +346,24 @@ var VirusGame;
                     this.getCellByIndex(index).makePossibleToMoveTo();
                 }
         }
+        opponentTurn(userID, row, col, state) {
+            this.getCellByCoords(row, col).cellPlayed(true);
+        }
+        updateInfoPanel() {
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
+        }
     }
+    BoardGame.colors = ['blue', 'yellow'];
     VirusGame.BoardGame = BoardGame;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
     class BoardPlayer {
-        constructor(color, is_local_player) {
+        constructor(id, color) {
+            this.id = id;
             this.color = color;
-            this.is_local_player = is_local_player;
             this.is_first_turn = true;
+            this.is_local_player = id === VirusGame.client.user_id;
         }
     }
     VirusGame.BoardPlayer = BoardPlayer;
@@ -293,34 +390,75 @@ var VirusGame;
             this.socket = io();
             this.socket.on('onConnected', function (data) {
                 _this.id = data.id;
-                _this.findGame();
             });
-            this.socket.on('added to game', function (game_id) {
-                console.log(game_id);
-                _this.active_game = game_id;
+            this.socket.on('player_move', function (userID, row, col, state) {
+                let game_state = (VirusGame.game.state.getCurrentState());
+                if (userID !== VirusGame.client.user_id)
+                    game_state.opponentTurn(userID, row, col, state);
             });
-            this.socket.on('start game', function (first_player) {
-                if (first_player != this.id) {
-                    let state = (window.game.state.getCurrentState());
-                    state.current_player_number = 1;
-                    state.up;
-                }
+            this.socket.on('user_login_results', function (user) {
+                _this.perform_login(user);
             });
-            this.socket.on('player move', function (userid, gameid, row, col) {
-                if (gameid == _this.active_game && userid != _this.id) {
-                    let state = (window.game.state.getCurrentState());
-                    state.getCellByCoords(row, col).cellPlayed();
-                }
+            this.socket.on('user_register_results', function (user) {
+                _this.perform_login(user);
+            });
+            this.socket.on('load_games_results', function (games) {
+                VirusGame.game.state.getCurrentState().setGames(games);
+            });
+            this.socket.on('load_game_info', function (info) {
+                VirusGame.game.state.getCurrentState().setInfo(info);
+            });
+            this.socket.on('load_game_players', function (players) {
+                VirusGame.game.state.getCurrentState().setPlayers(players);
+            });
+            this.socket.on('joined', function (GameID) {
+                VirusGame.game.state.restart(true, false, GameID);
+            });
+            this.socket.on('load_game_board', function (data) {
+                VirusGame.game.state.getCurrentState().setBoardData(data);
             });
         }
-        player_move(row, col) {
-            this.socket.emit('player move', this.active_game, row, col);
+        perform_login(user) {
+            if (user.length == 1) {
+                this.user_id = user[0].id;
+                VirusGame.game.state.start('MainMenu', true, false);
+            }
+        }
+        host_game() {
+            this.socket.emit('host game', this.user_id, 2);
+        }
+        player_move(gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
+            this.socket.emit('player move', this.user_id, gameID, row, col, state, cellsLeft, currentPlayer, usersLost);
         }
         emit(type) {
             this.socket.emit('m', type, this.id);
         }
         findGame() {
             this.emit('findGame');
+        }
+        login(login, password) {
+            this.socket.emit('user login', login, password);
+        }
+        register(login, password) {
+            this.socket.emit('user register', login, password);
+        }
+        load_my_games() {
+            this.socket.emit('load my games', this.user_id);
+        }
+        load_joinable_games() {
+            this.socket.emit('load joinable games', this.user_id);
+        }
+        preview_game(GameID) {
+            this.socket.emit('load game info', GameID);
+            this.socket.emit('load game players', GameID);
+        }
+        join(GameID) {
+            this.socket.emit('join game', this.user_id, GameID);
+        }
+        start_play(GameID) {
+            this.socket.emit('load game players', GameID);
+            this.socket.emit('load game info', GameID);
+            this.socket.emit('load game board', GameID);
         }
     }
     VirusGame.Client = Client;
@@ -330,14 +468,127 @@ var VirusGame;
     class Game extends Phaser.Game {
         constructor() {
             super(800, 600, Phaser.AUTO, 'content', null);
+            VirusGame.game = this;
+            VirusGame.ui = new UIPlugin.Plugin(VirusGame.game);
             this.state.add('Boot', VirusGame.Boot, false);
             this.state.add('Preloader', VirusGame.Preloader, false);
+            this.state.add('Login', VirusGame.Login, false);
             this.state.add('MainMenu', VirusGame.MainMenu, false);
+            this.state.add('GamesList', VirusGame.GamesList, false);
+            this.state.add('GamePreview', VirusGame.GamePreview, false);
             this.state.add('BoardGame', VirusGame.BoardGame, false);
             this.state.start('Boot');
         }
     }
     VirusGame.Game = Game;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    class GamePreview extends DBState {
+        _init(GameID) {
+            this.id = GameID;
+        }
+        preload() {
+            this.wait(2);
+            VirusGame.client.preview_game(this.id);
+            let back = VirusGame.game.add.button(50, 50, 'arrow_back', function () {
+                VirusGame.game.state.back();
+            });
+            back.width = back.height = 40;
+        }
+        _create() {
+            this.info_group = VirusGame.game.add.group();
+            this.info_group.y = 100;
+            this.add.text(0, 0, R.strings['game#'] + this.info.GameID, R.fonts['white_1'], this.info_group);
+            this.add.text(0, 0, R.strings['player_count'] + ':' + this.info.UsersCount, R.fonts['white_1'], this.info_group);
+            this.add.text(0, 0, R.strings['players'], R.fonts['white_1'], this.info_group);
+            this.players.forEach(function (player, i) {
+                this.add.text(0, 0, player.UserName, R.fonts['player_name_1'](VirusGame.BoardGame.colors[i]), this.info_group);
+            }, this);
+            this.info_group.align(1, -1, VirusGame.game.world.width, 30, Phaser.CENTER);
+            let b_text;
+            let b_callback;
+            if (this.players.length < this.info.UsersCount) {
+                b_text = R.strings['join'];
+                b_callback = this.join;
+            }
+            else {
+                b_text = R.strings['play'];
+                b_callback = this.play;
+            }
+            let button = VirusGame.ui.add.text_button(0, 0, b_callback, this, b_text, R.fonts['white_1'])
+                .alignIn(VirusGame.game.world.bounds, Phaser.BOTTOM_CENTER, 0, -100);
+        }
+        setPlayers(players) {
+            this.players = players;
+            this.done();
+        }
+        setInfo(info) {
+            this.info = info;
+            this.done();
+        }
+        join() {
+            VirusGame.client.join(this.info.GameID);
+        }
+        play() {
+            VirusGame.game.state.start('BoardGame', true, false, this.info.GameID);
+        }
+    }
+    VirusGame.GamePreview = GamePreview;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    class GamesList extends DBState {
+        constructor() {
+            super(...arguments);
+            this.sprite = "scrollbar";
+        }
+        _init(type) {
+            this.type = type;
+        }
+        preload() {
+            this.load.atlasJSONHash('scrollbar', 'assets/scrollbar.png', 'assets/scrollbar.json');
+            this.wait(1);
+            if (this.type == 'join')
+                VirusGame.client.load_joinable_games();
+            else if (this.type == 'resume')
+                VirusGame.client.load_my_games();
+            let back = VirusGame.game.add.button(50, 50, 'arrow_back', function () {
+                VirusGame.game.state.back();
+            });
+            back.width = back.height = 40;
+        }
+        _create() {
+            let gr = VirusGame.game.add.group();
+            let layout = new UIPlugin.SliderLayout({
+                parent: this,
+                container: gr,
+                bg: new Phaser.Rectangle(0, 0, 580, 260),
+                show_item: this.show_game,
+                position: [100, 170],
+                slider_position: [590, 0],
+                cols: 1,
+                item_size: [190, 50],
+                items_offset: [0, 20]
+            });
+            layout.update_items(this.items);
+        }
+        setGames(games) {
+            this.items = games;
+            this.done();
+        }
+        show_game(item, data, cell) {
+            let gameInfo = R.strings['game#'] + data.GameID;
+            if (data.PlayersCount)
+                gameInfo += ' (' + data.PlayersCount + '/' + data.UsersCount + ')';
+            let button = VirusGame.ui.add.text_button(0, 0, this.open_game, this, gameInfo, R.fonts['white_1'], item);
+            button.button.data.id = data.GameID;
+        }
+        open_game(b) {
+            VirusGame.game.state.start('GamePreview', true, false, b.data.id);
+        }
+    }
+    VirusGame.GamesList = GamesList;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
@@ -367,23 +618,102 @@ var VirusGame;
 })(VirusGame || (VirusGame = {}));
 var VirusGame;
 (function (VirusGame) {
-    class MainMenu extends Phaser.State {
+    class Login extends Phaser.State {
+        preload() {
+            this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
+            this.game.add.plugin(PhaserInput.Plugin, []);
+            let state_manager = VirusGame.game.state;
+            state_manager.history = [];
+            VirusGame.game.state.onStateChange.add(function (newState, oldState) {
+                if (newState == oldState)
+                    return;
+                if (!state_manager.returning) {
+                    let s = [newState];
+                    if (VirusGame.game.state.getCurrentState()['__data'])
+                        s.push(VirusGame.game.state.getCurrentState()['__data']);
+                    this.history.push(s);
+                }
+                else
+                    state_manager.returning = false;
+            }, VirusGame.game.state);
+            state_manager.back = function () {
+                state_manager.history.pop();
+                let last_state = state_manager.history[state_manager.history.length - 1];
+                state_manager.returning = true;
+                VirusGame.game.state.start(last_state[0], true, false, last_state.length > 0 ? last_state[1] : null);
+            };
+        }
         create() {
-            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), {
-                "fill": "#2ba6b7",
-                "font": "bold 60px Arial"
+            this.loginInput = this.game.add.inputField(0, 0, {
+                width: 200,
+                padding: 8,
+                borderWidth: 1,
+                borderColor: '#000',
+                borderRadius: 6,
+                placeHolder: 'login',
             });
+            this.loginInput.onEnterCallback = [function () {
+                    this.loginInput.endFocus();
+                    this.passInput.startFocus();
+                }, this];
+            this.loginInput.alignIn(this.game.world.bounds, Phaser.TOP_CENTER, 0, -215);
+            this.passInput = this.game.add.inputField(0, 0, {
+                width: 200,
+                padding: 8,
+                borderWidth: 1,
+                borderColor: '#000',
+                borderRadius: 6,
+                placeHolder: 'password',
+                type: PhaserInput.InputType.password
+            });
+            this.passInput.alignIn(this.game.world.bounds, Phaser.TOP_CENTER, 0, -250);
+            this.passInput.onEnterCallback = [function () {
+                    this.passInput.endFocus();
+                    this.login();
+                }, this];
+            let gr = VirusGame.game.add.group();
+            VirusGame.ui.add.text_button(0, 315, this.login, this, R.strings['login'], R.fonts['white_1'], gr)
+                .alignTo(this.passInput, Phaser.BOTTOM_CENTER, 8, 10);
+            VirusGame.ui.add.text_button(0, 370, this.register, this, R.strings['register'], R.fonts['white_1'], gr)
+                .alignTo(this.passInput, Phaser.BOTTOM_CENTER, 8, 60);
+        }
+        login() {
+            let login = this.loginInput.value;
+            let password = this.passInput.value;
+            VirusGame.client.login(login, password);
+        }
+        register() {
+            let login = this.loginInput.value;
+            let password = this.passInput.value;
+            VirusGame.client.register(login, password);
+        }
+    }
+    VirusGame.Login = Login;
+})(VirusGame || (VirusGame = {}));
+var VirusGame;
+(function (VirusGame) {
+    class MainMenu extends Phaser.State {
+        preload() {
+            this.load.image('arrow_back', 'assets/arrowLeft.png');
+        }
+        create() {
+            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), R.fonts['blue_1']);
             this.logo.anchor.set(0.5, 0.5);
-            this.button = this.add.button(this.world.centerX, 200, 'ui', this.startGame, this, 'blue_button01', 'blue_button03', 'blue_button05');
-            this.button.anchor.set(0.5, 0.5);
-            this.button_text = this.add.text(0, 0, R.strings['start_game'], {
-                "fill": "#fefefe",
-                "font": "bold 24px Arial",
-                "stroke": "#000000",
-                "strokeThickness": 2
-            });
-            this.button_text.alignIn(this.button, Phaser.CENTER);
-            this.startGame();
+            VirusGame.ui.add.text_button(0, 0, this.createGame, this, R.strings['create_game'], R.fonts['white_1'])
+                .alignIn(VirusGame.game.camera.bounds, Phaser.TOP_CENTER, 0, -200);
+            VirusGame.ui.add.text_button(0, 0, this.joinGame, this, R.strings['join_game'], R.fonts['white_1'])
+                .alignIn(VirusGame.game.camera.bounds, Phaser.TOP_CENTER, 0, -250);
+            VirusGame.ui.add.text_button(0, 0, this.resumeGame, this, R.strings['resume_game'], R.fonts['white_1'])
+                .alignIn(VirusGame.game.camera.bounds, Phaser.TOP_CENTER, 0, -300);
+        }
+        createGame() {
+            VirusGame.client.host_game();
+        }
+        joinGame() {
+            this.game.state.start('GamesList', true, false, 'join');
+        }
+        resumeGame() {
+            this.game.state.start('GamesList', true, false, 'resume');
         }
         startGame() {
             this.game.state.start('BoardGame', true, false);
@@ -397,8 +727,6 @@ var VirusGame;
         preload() {
             this.preloadBar = this.add.sprite(200, 250, 'preloadBar');
             this.load.setPreloadSprite(this.preloadBar);
-            this.load.atlasXML('ui', 'assets/ui.png', 'assets/ui.xml');
-            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
             VirusGame.client = new VirusGame.Client();
         }
         create() {
@@ -406,7 +734,7 @@ var VirusGame;
             tween.onComplete.add(this.startMainMenu, this);
         }
         startMainMenu() {
-            this.game.state.start('MainMenu', true, false);
+            this.game.state.start('Login', true, false);
         }
     }
     VirusGame.Preloader = Preloader;
@@ -415,10 +743,308 @@ let R = {
     strings: undefined,
     fonts: undefined
 };
+R.fonts = {
+    blue_1: {
+        "fill": "#2ba6b7",
+        "font": "bold 60px Arial"
+    },
+    white_1: {
+        "fill": "#fefefe",
+        "font": "bold 24px Arial",
+        "stroke": "#000000",
+        "strokeThickness": 2
+    },
+    player_name_1: function (color) {
+        return {
+            "fill": color,
+            "font": "bold 24px Arial",
+            "stroke": "#000000",
+            "strokeThickness": 2
+        };
+    }
+};
 R.strings = {
     game_name: 'Virus',
     start_game: 'Start game',
+    create_game: 'Create game',
+    join_game: 'Join game',
+    resume_game: 'Resume game',
+    login: 'Login',
+    register: 'Register',
+    'game#': 'Game #',
+    'player_count': 'Players',
+    'players': 'Players',
+    'join': 'Join',
+    'play': 'Play',
     player_info: (left_turns, player_color) => left_turns + " cells more for " + player_color.toString() + " player",
     game_over: (player_color) => "Game Over for " + player_color.toString() + " player"
 };
+var UIPlugin;
+(function (UIPlugin) {
+    class Button extends Phaser.Button {
+        constructor(game_, x, y, sprite, func, context, base_path, parent = false, button_group = false) {
+            super(game_, x, y, sprite);
+            if (parent === true)
+                parent = context;
+            if (parent)
+                parent.add(this);
+            this.smoothed = false;
+            this.base_path = base_path;
+            this.func = func;
+            this.context = context;
+            this.state = 0;
+            this.paths = [this.base_path];
+            this.funcs = [this.func];
+            this.button_group = button_group;
+            this.outFrame = 'normal';
+            this.onInputUp.add(this.call, this);
+            this.setFrames(base_path + 'hover', base_path + 'normal', base_path + 'click');
+            this.input.useHandCursor = true;
+        }
+        setClickedState(name) {
+            this.onInputUp.add(function () {
+                if (this.button_group) {
+                    this.parent.setAll('outFrame', 'normal');
+                }
+                this.outFrame = name;
+                if (this.button_group) {
+                    this.parent.callAll('updateFrames');
+                }
+            }, this, 1);
+        }
+        setToggleState(sprite, func) {
+            this.paths = [this.base_path, sprite];
+            this.funcs = [this.func, func];
+        }
+        setDisabled(val) {
+            if (val) {
+                this.setFrames(this.base_path + 'inactive', this.base_path + 'inactive', this.base_path + 'inactive');
+                this.disabled = true;
+            }
+            else {
+                this.setFrames(this.base_path + 'hover', this.base_path + 'normal', this.base_path + 'click');
+                this.disabled = false;
+            }
+        }
+        call() {
+            if (this.disabled)
+                return;
+            let state = this.state;
+            this.state = (this.paths.length - 1) - this.state;
+            if (this.paths.length > 1) {
+                var base_path = this.paths[this.state];
+                this.setFrames(base_path + 'hover', base_path + 'normal', base_path + 'click');
+            }
+            this.funcs[state].apply(this.context, [this]);
+        }
+        updateFrames() {
+            if (this.outFrame != 'normal')
+                this.setFrames(this.base_path + this.outFrame, this.base_path + this.outFrame, this.base_path + this.outFrame);
+            else
+                this.setFrames(this.base_path + 'hover', this.base_path + 'normal', this.base_path + 'click');
+        }
+    }
+    UIPlugin.Button = Button;
+})(UIPlugin || (UIPlugin = {}));
+var UIPlugin;
+(function (UIPlugin) {
+    class DataGroup extends Phaser.Group {
+        constructor(game_, parent, name, addToStage, enableBody, physicsBodyType) {
+            super(game_, parent, name, addToStage, enableBody, physicsBodyType);
+        }
+    }
+    UIPlugin.DataGroup = DataGroup;
+})(UIPlugin || (UIPlugin = {}));
+var UIPlugin;
+(function (UIPlugin) {
+    class ObjectFactory {
+        constructor(game) {
+            this.game = game;
+        }
+        data_group(parent, name, addToStage, enableBody, physicsBodyType) {
+            return new UIPlugin.DataGroup(UIPlugin._game, parent, name, addToStage, enableBody, physicsBodyType);
+        }
+        button(x, y, sprite, func, context, base_path, parent, button_group) {
+            return new UIPlugin.Button(UIPlugin._game, x, y, sprite, func, context, base_path, parent, button_group);
+        }
+        text_button(x, y, callback, scope, text, font, parent) {
+            return new UIPlugin.TextButton(UIPlugin._game, x, y, callback, scope, text, font, parent);
+        }
+        slider(x, y, key, frame, group) {
+            let slider = new UIPlugin.Slider(UIPlugin._game, x, y, key, frame);
+            group.add(slider);
+            return slider;
+        }
+    }
+    ;
+    class Plugin {
+        constructor(game) {
+            this.game = game;
+            UIPlugin._game = game;
+            this.add = new ObjectFactory(game);
+            UIPlugin.objectFactory = this.add;
+        }
+    }
+    UIPlugin.Plugin = Plugin;
+})(UIPlugin || (UIPlugin = {}));
+var UIPlugin;
+(function (UIPlugin) {
+    class TextButton extends Phaser.Group {
+        constructor(game_, x, y, callback, scope, text, font, parent) {
+            super(game_, parent);
+            this.button = UIPlugin._game.add.button(x, y, 'ui', callback, scope, 'blue_button01', 'blue_button03', 'blue_button05', 'blue_button01', this);
+            this.button_text = UIPlugin._game.add.text(0, 0, text, font, this);
+            this.button_text.alignIn(this.button, Phaser.CENTER);
+        }
+    }
+    UIPlugin.TextButton = TextButton;
+})(UIPlugin || (UIPlugin = {}));
+var UIPlugin;
+(function (UIPlugin) {
+    class Slider extends Phaser.Image {
+        constructor(game, x, y, key, frame) {
+            super(game, x, y, key, frame);
+        }
+    }
+    UIPlugin.Slider = Slider;
+    class SliderLayout extends Phaser.Group {
+        constructor(config) {
+            super(UIPlugin._game);
+            this.config = config;
+            this.config = config;
+            this.config.container.add(this);
+            this.x = config.position[0];
+            this.y = config.position[1];
+            this.init_ui();
+            this.init_events();
+        }
+        init_ui() {
+            let config = this.config;
+            let self = this;
+            let bg = typeof (config.bg) == typeof ('') ? UIPlugin._game.add.image(0, 0, config.parent.sprite, config.bg, this) : config.bg;
+            let items_group = UIPlugin._game.add.group(this);
+            let grid_cell = new Phaser.Rectangle(0, 0, config.item_size[0], config.item_size[1]);
+            this.bg = bg;
+            this.grid_cell = grid_cell;
+            this.items_group = items_group;
+            let mask = UIPlugin._game.add.graphics(config.container.cameraOffset.x + config.position[0], config.container.cameraOffset.y + config.position[1]);
+            mask.fixedToCamera = true;
+            mask.beginFill(0xffffff);
+            mask.drawRect(config.items_offset[0], config.items_offset[1], bg.width - 2 * config.items_offset[0], bg.height - 2 * config.items_offset[1]);
+            items_group.mask = mask;
+            let slider = UIPlugin._game.add.group(this);
+            slider.x = config.slider_position[0];
+            slider.y = config.slider_position[1];
+            let slider_bg = UIPlugin._game.add.image(0, 0, config.parent.sprite, 'elements/scrolling/way', slider);
+            let b_up = UIPlugin.objectFactory.button(0, 0, config.parent.sprite, this.slide_down, this, 'elements/scrolling/arrow/up_', slider);
+            let b_down = UIPlugin.objectFactory.button(0, bg.height - b_up.height, config.parent.sprite, this.slide_up, this, 'elements/scrolling/arrow/down_', slider);
+            slider_bg.crop(new Phaser.Rectangle(0, 0, slider_bg.width, bg.height - b_up.height));
+            slider_bg.alignTo(b_up, Phaser.BOTTOM_CENTER, 0, -b_up.height / 2 | 0);
+            let _slider = UIPlugin.objectFactory.slider(0, 0, config.parent.sprite, 'elements/scrolling/scrolling/normal', slider);
+            _slider.inputEnabled = true;
+            _slider.input.enableDrag();
+            _slider.min_y = b_up.y + b_up.height;
+            _slider.max_y = b_down.y - (b_up.y + b_up.height);
+            _slider.max_abs_y = _slider.max_y - _slider.height;
+            _slider.input.boundsRect = new Phaser.Rectangle(b_up.width / 2 - _slider.width / 2 | 0, _slider.min_y, _slider.width, _slider.max_y);
+            _slider.x = b_up.width / 2 - _slider.width / 2 | 0;
+            _slider.y = _slider.min_y;
+            _slider.input.useHandCursor = true;
+            _slider.events.onInputOver.add(function () {
+                _slider.frameName = 'elements/scrolling/scrolling/hover';
+            }, this);
+            _slider.events.onInputOut.add(function () {
+                _slider.frameName = 'elements/scrolling/scrolling/normal';
+            }, this);
+            _slider.events.onInputDown.add(function () {
+                _slider.frameName = 'elements/scrolling/scrolling/click';
+            }, this);
+            _slider.events.onInputUp.add(function () {
+                _slider.frameName = 'elements/scrolling/scrolling/hover';
+            }, this);
+            _slider.events.onDragUpdate.add(function (img) {
+                let pos = (img.y - img.min_y) / img.max_abs_y;
+                self.layout_move(pos);
+            });
+            this._slider = _slider;
+            if (config.data)
+                this.update_items(config.data);
+        }
+        update_items(data) {
+            let items_group = this.items_group;
+            let config = this.config;
+            let self = this;
+            items_group.removeAll(true);
+            let item_group;
+            for (let item_data of data) {
+                item_group = UIPlugin._game.add.group(items_group);
+            }
+            ;
+            items_group.align(config.cols, -1, config.item_size[0], config.item_size[1]);
+            items_group.y = config.items_offset[1];
+            items_group.x = (this.bg.width - config.item_size[0] * config.cols) / 2 + config.items_offset[0] | 0;
+            data.forEach((item_data, i) => {
+                let item_group = items_group.getAt(i);
+                item_group.data = item_data;
+                config.show_item.apply(config.parent, [item_group, item_data, self.grid_cell, i]);
+            });
+            for (let i in data) {
+            }
+            ;
+            this._slider.y = this._slider.min_y;
+        }
+        layout_move(pos) {
+            if (this.scroll_tween) {
+                this.scroll_tween.stop();
+                this.scroll_slider_tween.stop();
+            }
+            let dbottom = (this.items_group.y + this.items_group.height) - (this.bg.height - 2 * this.config.items_offset[1]);
+            if (dbottom < 0)
+                return;
+            this.items_group.y = this.config.items_offset[1] - (this.items_group.height - this.items_group.mask.height) * pos;
+        }
+        slide_up() {
+            if (this.scroll_tween) {
+                this.scroll_tween.stop();
+                this.scroll_slider_tween.stop();
+            }
+            let dy = this.config.item_size[1];
+            let dbottom = (this.items_group.y + this.items_group.height) - (this.bg.height - 2 * this.config.items_offset[1]);
+            if (dbottom < 0)
+                return;
+            if (dbottom < dy)
+                dy = dbottom;
+            let rel_y = (this.items_group.height - this.items_group.mask.height);
+            let pos = (this.items_group.y - dy) / rel_y;
+            this.scroll_tween = UIPlugin._game.add.tween(this.items_group).to({ y: this.items_group.y - dy }, 200, Phaser.Easing.Cubic.Out, true);
+            this.scroll_slider_tween = UIPlugin._game.add.tween(this._slider).to({ y: this._slider.min_y - this._slider.max_abs_y * pos }, 200, Phaser.Easing.Cubic.Out, true);
+        }
+        slide_down() {
+            if (this.scroll_tween) {
+                this.scroll_tween.stop();
+                this.scroll_slider_tween.stop();
+            }
+            let dy = this.config.item_size[1];
+            let dtop = this.config.items_offset[1] - this.items_group.y;
+            if (dtop < dy)
+                dy = dtop;
+            let rel_y = (this.items_group.height - this.items_group.mask.height);
+            let pos = (this.items_group.y + dy - this.config.items_offset[1]) / rel_y;
+            this.scroll_tween = UIPlugin._game.add.tween(this.items_group).to({ y: this.items_group.y + dy }, 200, Phaser.Easing.Cubic.Out, true);
+            this.scroll_slider_tween = UIPlugin._game.add.tween(this._slider).to({ y: this._slider.min_y - this._slider.max_abs_y * pos }, 200, Phaser.Easing.Cubic.Out, true);
+        }
+        init_events() {
+            let self = this;
+            UIPlugin._game.input.mouse.mouseWheelCallback = function () {
+                if (UIPlugin._game.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP) {
+                    self.slide_down();
+                }
+                else {
+                    self.slide_up();
+                }
+            };
+        }
+    }
+    UIPlugin.SliderLayout = SliderLayout;
+})(UIPlugin || (UIPlugin = {}));
 //# sourceMappingURL=app.js.map

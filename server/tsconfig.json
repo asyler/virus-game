@@ -5,14 +5,14 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "target": "es6",
-    "out": "server/server_app.js",
-    "outDir": "server/",
+    "out": "server_app.js",
+    "outDir": "build",
     "sourceMap": true
   },
   "include": [
-    "server/Game.ts",
-    "server/GameServer.ts",
-    "server/server.ts"
+    "GameS.ts",
+    "GameServer.ts",
+    "server.ts"
     //"tsDefinitions/*"
   ]
 }

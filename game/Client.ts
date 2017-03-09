@@ -2,41 +2,67 @@ module VirusGame {
     export class Client {
         private id: string;
         private socket: SocketIOClient.Socket;
-        active_game: string;
+        active_game: number;
+        user_id: number;
         constructor() {
             let _this = this;
 
             this.socket = io();
             this.socket.on('onConnected', function(data){
                 _this.id = data.id;
-
-                _this.findGame();
             });
 
-            this.socket.on('added to game', function (game_id) {
-               console.log(game_id);
-                _this.active_game = game_id;
+            this.socket.on('player_move', function (userID, row, col, state) {
+                let game_state = <BoardGame>(game.state.getCurrentState());
+                if (userID!==client.user_id)
+                    game_state.opponentTurn(userID, row, col, state);
             });
 
-            this.socket.on('start game', function (first_player) {
-                if (first_player!=this.id) {
-                    let state = <BoardGame>(window.game.state.getCurrentState());
-                    state.current_player_number = 1;
-                    state.up
-                }
-
+            this.socket.on('user_login_results', function (user) {
+                _this.perform_login(user);
             });
 
-            this.socket.on('player move', function (userid, gameid, row, col) {
-                if (gameid==_this.active_game && userid!=_this.id) {
-                    let state = <BoardGame>(window.game.state.getCurrentState());
-                    state.getCellByCoords(row,col).cellPlayed();
-                }
+            this.socket.on('user_register_results', function (user) {
+                _this.perform_login(user);
+            });
+
+            this.socket.on('load_games_results', function (games) {
+                (<GamesList>game.state.getCurrentState()).setGames(games);
+            });
+
+            this.socket.on('load_game_info', function (info) {
+                (<any>game.state.getCurrentState()).setInfo(info);
+            });
+
+            this.socket.on('load_game_players', function (players) {
+                (<any>game.state.getCurrentState()).setPlayers(players);
+            });
+
+            this.socket.on('joined', function (GameID) {
+                game.state.restart(true, false, GameID);
+            });
+
+            this.socket.on('load_game_board', function (data) {
+                (<BoardGame>game.state.getCurrentState()).setBoardData(data);
             });
         }
 
-        player_move(row: number, col: number) {
-            this.socket.emit('player move', this.active_game, row, col);
+        // handle server response
+        perform_login(user) {
+            if (user.length==1) {
+                this.user_id = user[0].id;
+                game.state.start('MainMenu', true, false);
+            }
+        }
+
+        // send to server
+        host_game() {
+            this.socket.emit('host game', this.user_id, 2);
+        }
+
+        player_move(gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
+            this.socket.emit('player move', this.user_id, gameID, row, col, state, cellsLeft, currentPlayer, usersLost);
+
         }
 
         emit(type: string) {
@@ -45,6 +71,37 @@ module VirusGame {
 
         findGame() {
             this.emit('findGame');
+        }
+
+        login(login:string, password:string) {
+            this.socket.emit('user login', login, password);
+        }
+
+        register(login:string, password:string) {
+            this.socket.emit('user register', login, password);
+        }
+
+        load_my_games() {
+            this.socket.emit('load my games', this.user_id);
+        }
+
+        load_joinable_games() {
+            this.socket.emit('load joinable games', this.user_id);
+        }
+
+        preview_game(GameID:number) {
+            this.socket.emit('load game info', GameID);
+            this.socket.emit('load game players', GameID);
+        }
+
+        join(GameID:number) {
+            this.socket.emit('join game', this.user_id, GameID);
+        }
+
+        start_play(GameID:number) {
+            this.socket.emit('load game players', GameID);
+            this.socket.emit('load game info', GameID);
+            this.socket.emit('load game board', GameID);
         }
     }
 }

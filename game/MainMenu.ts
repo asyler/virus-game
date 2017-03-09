@@ -1,31 +1,37 @@
 module VirusGame {
 
     export class MainMenu extends Phaser.State {
-
         logo: Phaser.Text;
         button: Phaser.Button;
         button_text: Phaser.Text;
 
-        create() {
+        preload() {
+            this.load.image('arrow_back','assets/arrowLeft.png');
+        }
 
-            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), {
-                "fill":"#2ba6b7",
-                "font":"bold 60px Arial"
-            });
+        create() {
+            this.logo = this.add.text(this.world.centerX, 100, R.strings['game_name'].toUpperCase(), R.fonts['blue_1']);
             this.logo.anchor.set(0.5,0.5);
 
-            this.button = this.add.button(this.world.centerX, 200, 'ui', this.startGame, this, 'blue_button01','blue_button03','blue_button05');
-            this.button.anchor.set(0.5,0.5);
+            ui.add.text_button(0, 0, this.createGame, this, R.strings['create_game'], R.fonts['white_1'])
+                .alignIn(game.camera.bounds, Phaser.TOP_CENTER,0,-200);
+            ui.add.text_button(0, 0, this.joinGame, this, R.strings['join_game'], R.fonts['white_1'])
+                .alignIn(game.camera.bounds, Phaser.TOP_CENTER,0,-250);
+            ui.add.text_button(0, 0, this.resumeGame, this, R.strings['resume_game'], R.fonts['white_1'])
+                .alignIn(game.camera.bounds, Phaser.TOP_CENTER,0,-300);
 
-            this.button_text = this.add.text(0,0,R.strings['start_game'], {
-                "fill": "#fefefe",
-                "font": "bold 24px Arial",
-                "stroke": "#000000",
-                "strokeThickness": 2
-            });
-            this.button_text.alignIn(this.button,Phaser.CENTER);
+            //this.startGame(); // debug
+        }
 
-            this.startGame(); // debug
+        createGame() {
+            client.host_game();
+        }
+        joinGame() {
+            this.game.state.start('GamesList', true, false, 'join');
+        }
+
+        resumeGame() {
+            this.game.state.start('GamesList', true, false, 'resume');
         }
 
         startGame() {

@@ -1,5 +1,5 @@
 module VirusGame {
-    export class BoardGame extends Phaser.State {
+    export class BoardGame extends DBState {
 
         number_of_players: number = 2;
         current_player_number: number;
@@ -9,15 +9,52 @@ module VirusGame {
 
         board: Phaser.Group;
         players: Array<BoardPlayer>;
+        players_dict: { [id: string] : BoardPlayer };
         infoPanel: InfoPanel;
 
-        colors: Array<string> = ['blue', 'yellow'];
+        static colors: Array<string> = ['blue', 'yellow'];
+        id: number;
+        private board_state;
+        private board_cells;
+        private players_list;
+        private game_info;
 
-        create() {
+        _init(GameID) {
+            this.id = GameID;
+        }
+
+        preload() {
+            this.wait(3);
+            client.start_play(this.id);
+            let back = game.add.button(50,50,'arrow_back',function () {
+                (<StateManager>game.state).back();
+            });
+            back.width = back.height = 40;
+            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
+        }
+
+        setInfo(data) {
+            this.game_info = data;
+            this.done();
+        }
+
+        setPlayers(data) {
+            this.players_list = data;
+            this.done();
+        }
+
+        setBoardData(data) {
+
+            this.board_state = data;
+            this.done();
+        }
+
+        _create() {
             this.addPlayers();
             this.initGame();
             this.drawBoard();
             this.drawInfo();
+            this.setBoardState();
         }
 
         private drawInfo() {
@@ -25,12 +62,28 @@ module VirusGame {
             this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
         }
 
+        private setBoardState() {
+            for (let cell of this.board_state) {
+                this.board_cells[cell['X']][cell['Y']].setState(cell['State'],this.players_dict[cell['UserID']]);
+                this.players_dict[cell['UserID']].is_first_turn = false;
+            }
+            this.current_player_number = this.game_info['PlayerTurn'];
+            this.left_turn_cells = this.game_info['CellsLeft'];
+
+            this.updateInfoPanel();
+            this.updateActiveRegion();
+            this.updatePossibleMoves();
+        }
+
         private drawBoard() {
             this.board = this.add.group();
+            this.board_cells = [];
 
             for (let row = 0; row < 10; row++) {
+                this.board_cells.push([]);
                 for (let col = 0; col < 10; col++) {
-                    this.addCell(row, col);
+                    let cell = this.addCell(row, col);
+                    this.board_cells[row].push(cell);
                 }
             }
             this.board.align(10, 10, 40, 40);
@@ -42,6 +95,7 @@ module VirusGame {
             if (this.isTileOnEdge(row, col))
                 cell.makePossibleToMoveTo();
             this.board.add(cell);
+            return cell;
         }
 
         private cellIndex(row: number, col: number): number {
@@ -59,8 +113,12 @@ module VirusGame {
 
         private addPlayers() {
             this.players = [];
-            for (let i = 0; i < this.number_of_players; i++) {
-                this.players.push(new BoardPlayer(this.colors[i], i==0));
+            this.players_dict = {};
+            for (let i in this.players_list) {
+                let user_id = this.players_list[i]['UserID'];
+                let player = new BoardPlayer(user_id, BoardGame.colors[i]);
+                this.players.push(player);
+                this.players_dict[user_id] = player;
             }
         }
 
@@ -81,8 +139,8 @@ module VirusGame {
         endTurn() {
             this.left_turn_cells--;
             this.checkTurnChange();
-            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
 
+            this.updateInfoPanel();
             this.updateActiveRegion();
             this.updatePossibleMoves();
         }
@@ -229,6 +287,15 @@ module VirusGame {
                     this.possibleMoves.push(index);
                     this.getCellByIndex(index).makePossibleToMoveTo();
                 }
+        }
+
+        opponentTurn(userID:number, row:number, col:number, state:number) {
+            this.getCellByCoords(row,col).cellPlayed(true);
+        }
+
+        private updateInfoPanel() {
+            this.infoPanel.setInfo(this.current_player, this.left_turn_cells);
+
         }
     }
 }
