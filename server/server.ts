@@ -57,6 +57,7 @@ sio.sockets.on('connection', function (client) {
 			if (error) throw error;
 				if (results.length>0)
 					bcrypt.compare(password, results[0]['password'], function(err, res) {
+						console.log(password,results[0]['password'],res);
 						if (res)
 							client.emit('user_login_results', results);
 					});
