@@ -29,12 +29,7 @@ let basepath = path.resolve(__dirname + '/../');
 let bcrypt = require('bcrypt');
 const saltRounds = 10;
 let mysql = require('mysql');
-let connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'w9DllBJj',
-    database: 'virus'
-});
+let connection = mysql.createConnection(process.env.JAWSDB_URL);
 connection.connect();
 let clients = {};
 server.listen(gameport);
