@@ -5,4 +5,5 @@ www/js/*.js
 www/js/*.js.map
 node_modules/*
 server/*.js
+server/*.js.map
 .vscode/*

@@ -1,5 +1,7 @@
 0 info it worked if it ends with ok
-1 verbose cli [ '/usr/bin/nodejs', '/usr/bin/npm', 'start' ]
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'start' ]
 2 info using npm@3.10.10
 3 info using node@v6.9.4
 4 verbose run-script [ 'prestart', 'start', 'poststart' ]
@@ -7,25 +9,25 @@
 6 silly lifecycle virus-game@0.1.0~prestart: no script for prestart, continuing
 7 info lifecycle virus-game@0.1.0~start: virus-game@0.1.0
 8 verbose lifecycle virus-game@0.1.0~start: unsafe-perm in lifecycle true
-9 verbose lifecycle virus-game@0.1.0~start: PATH: /usr/lib/node_modules/npm/bin/node-gyp-bin:/home/asyler/workspace/www/gamedev/virus-game/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin
-10 verbose lifecycle virus-game@0.1.0~start: CWD: /home/asyler/workspace/www/gamedev/virus-game
-11 silly lifecycle virus-game@0.1.0~start: Args: [ '-c', 'node server/server_app.js' ]
+9 verbose lifecycle virus-game@0.1.0~start: PATH: C:\Program Files\nodejs\node_modules\npm\bin\node-gyp-bin;D:\rybal_000\Documents\Git projects\virus-game\node_modules\.bin;D:\Program Files\ImageMagick-7.0.3-Q16;D:\Program Files\Perl\site\bin;D:\Program Files\Perl\bin;C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files (x86)\Windows Kits\8.0\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\AMD\ATI.ACE\Core-Static;C:\Program Files (x86)\Skype\Phone\;C:\Program Files (x86)\PharosSystems\Core;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files (x86)\Microsoft VS Code;D:\texlive\2015\bin\win32;C:\Users\rybal_000\AppData\Local\Microsoft\WindowsApps;C:\Users\rybal_000\AppData\Roaming\npm
+10 verbose lifecycle virus-game@0.1.0~start: CWD: D:\rybal_000\Documents\Git projects\virus-game
+11 silly lifecycle virus-game@0.1.0~start: Args: [ '/d /s /c', 'node server/server_app.js' ]
 12 silly lifecycle virus-game@0.1.0~start: Returned: code: 1  signal: null
 13 info lifecycle virus-game@0.1.0~start: Failed to exec start script
 14 verbose stack Error: virus-game@0.1.0 start: `node server/server_app.js`
 14 verbose stack Exit status 1
-14 verbose stack     at EventEmitter.<anonymous> (/usr/lib/node_modules/npm/lib/utils/lifecycle.js:255:16)
+14 verbose stack     at EventEmitter.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\lifecycle.js:255:16)
 14 verbose stack     at emitTwo (events.js:106:13)
 14 verbose stack     at EventEmitter.emit (events.js:191:7)
-14 verbose stack     at ChildProcess.<anonymous> (/usr/lib/node_modules/npm/lib/utils/spawn.js:40:14)
+14 verbose stack     at ChildProcess.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\spawn.js:40:14)
 14 verbose stack     at emitTwo (events.js:106:13)
 14 verbose stack     at ChildProcess.emit (events.js:191:7)
 14 verbose stack     at maybeClose (internal/child_process.js:877:16)
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:226:5)
 15 verbose pkgid virus-game@0.1.0
-16 verbose cwd /home/asyler/workspace/www/gamedev/virus-game
-17 error Linux 4.4.0-64-generic
-18 error argv "/usr/bin/nodejs" "/usr/bin/npm" "start"
+16 verbose cwd D:\rybal_000\Documents\Git projects\virus-game
+17 error Windows_NT 10.0.14393
+18 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "start"
 19 error node v6.9.4
 20 error npm  v3.10.10
 21 error code ELIFECYCLE
