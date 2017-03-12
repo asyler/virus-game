@@ -8,3 +8,4 @@ server/*.js
 server/*.js.map
 server/config.json
 .vscode/*
+npm-debug.log
