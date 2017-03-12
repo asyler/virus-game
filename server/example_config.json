@@ -2,6 +2,6 @@
     "_comment": "Rename this file to config.json and input your actual values for:",
     "host":"localhost",
     "user":"root",
-    "password":"liverpool_arsenal_3:1",
+    "password":"just password. nothing else.",
     "database":"virus"
 }
