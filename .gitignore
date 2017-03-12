@@ -6,4 +6,5 @@ www/js/*.js.map
 node_modules/*
 server/*.js
 server/*.js.map
+server/config.json
 .vscode/*

@@ -14,11 +14,12 @@ let bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 let mysql      = require('mysql');
+let config = require('../server/config.json');
 let connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : 'w9DllBJj',
-    database : 'virus'
+    host     : config.host,
+    user     : config.user,
+    password : config.password,
+    database : config.database
 });
 connection.connect();
 
