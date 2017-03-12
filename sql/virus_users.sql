@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `UserID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `UserName` varchar(45) DEFAULT NULL,
-  `Password` varchar(45) DEFAULT NULL,
+  `Password` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`UserID`),
   UNIQUE KEY `UsersID_UNIQUE` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
