@@ -25,7 +25,9 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `UserID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `UserName` varchar(45) DEFAULT NULL,
-  `Password` varchar(60) DEFAULT NULL,
+  `Password` varchar(45) DEFAULT NULL,
+  `WinsCount` int(10) unsigned DEFAULT '0',
+  `LossesCount` int(10) unsigned DEFAULT '0',
   PRIMARY KEY (`UserID`),
   UNIQUE KEY `UsersID_UNIQUE` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -49,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-03-05  2:13:50
+-- Dump completed on 2017-03-30  0:55:16

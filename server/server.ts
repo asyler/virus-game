@@ -146,6 +146,13 @@ sio.sockets.on('connection', function (client) {
 						 'ON DUPLICATE KEY user1winuser2count = user1winuser2count + 1;', [winnerID, gameID, winnerID, 1], function (error, results, fields) {
 			if (error) throw error;
 		});
+		connection.query('Update users Set WinsCount = WinsCount + 1 WHERE UserID = ?'[winnerID], function (error, results, fields) {
+			if (error) throw error;
+		});
+		
+		connection.query('Update users Set LossesCount = LossesCount + 1 WHERE UserID IS NOT ?', [winnerID], function (error, results, fields) {
+			if (error) throw error;
+		});
 		connection.query('DELETE FROM singleGames WHERE GameID = ?; DELETE FROM usersGames WHERE gameID = ?; DELETE FROM games WHERE gameID = ?', [gameID, gameID, gameID],
 		function (error, results, fields) {
 			if (error) throw error;

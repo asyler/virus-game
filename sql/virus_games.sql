@@ -28,6 +28,7 @@ CREATE TABLE `games` (
   `PlayerTurn` int(11) DEFAULT NULL,
   `CellsLeft` int(11) DEFAULT NULL,
   `UsersCount` int(11) DEFAULT NULL,
+  `IsPlayed` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`GameID`),
   UNIQUE KEY `GameID_UNIQUE` (`GameID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -51,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-03-05  2:13:50
+-- Dump completed on 2017-03-30  0:55:16
