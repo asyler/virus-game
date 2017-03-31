@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `UserID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `UserName` varchar(45) DEFAULT NULL,
-  `Password` varchar(45) DEFAULT NULL,
+  `Password` varchar(60) DEFAULT NULL,
   `WinsCount` int(10) unsigned DEFAULT '0',
   `LossesCount` int(10) unsigned DEFAULT '0',
   PRIMARY KEY (`UserID`),
