@@ -7,5 +7,6 @@ node_modules/*
 server/*.js
 server/*.js.map
 server/config.json
+server/server/*
 .vscode/*
 npm-debug.log
