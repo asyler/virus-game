@@ -67,18 +67,25 @@ sio.sockets.on('connection', function (client) {
 					});
 		});
 	});
-	
-	client.on('user register', function(userName, password) {
-		bcrypt.genSalt(saltRounds, function(err, salt) {
-			bcrypt.hash(password, salt, function(err, hash) {
-				connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
-					if (error) throw error;
-                    connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
-						if (error) throw error;
-						client.emit('user_register_results', results);
+
+	client.on('user register', function (userName, password) {
+		connection.query('SELECT UserID FROM virus.users WHERE UserName = ?;', [userName], function (error, results, fields) {
+			if (error) throw error;
+			if (results.length != 0) {
+				// TODO: Add "User already exists" message
+			} else {
+				bcrypt.genSalt(saltRounds, function (err, salt) {
+					bcrypt.hash(password, salt, function (err, hash) {
+						connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
+							if (error) throw error;
+							connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
+								if (error) throw error;
+								client.emit('user_register_results', results);
+							});
+						});
 					});
 				});
-			});
+			};
 		});
 	});
 	
