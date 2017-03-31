@@ -10,3 +10,4 @@ server/config.json
 server/server/*
 .vscode/*
 npm-debug.log
+/db/seed.json

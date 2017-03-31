@@ -6,8 +6,9 @@ Run `npm install` to install dependencies.
 Compile server: `tsc -p server`.
 Compile client: `tsc`.
 
+
 **Migration**
-Run `npm migrate` to migrate and seed database.
+Run `npm run migrate` to migrate and seed database.
 
 **Run**
 Start server first: `npm start`. 
