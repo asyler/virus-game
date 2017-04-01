@@ -90,7 +90,7 @@ sio.sockets.on('connection', function (client) {
 	});
 	
 	client.on('host game', function(ownerID, usersCount) {
-		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 1, usersCount],
+		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount, playersCount) VALUES (now(), ?, ?, ?, ?)', [0, 1, usersCount, 1],
 		function (error, results, fields) {
 				if (error) throw error;
                 connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [ownerID, results.insertId, 0],
@@ -105,21 +105,43 @@ sio.sockets.on('connection', function (client) {
 			if (error) throw error;
 			connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1], function (error, results, fields) {
 				if (error) throw error;
-				client.emit('joined', gameID);
+				connection.query('UPDATE games SET playersCount = playersCount + 1 WHERE GameID = ?;', [gameID], function (error, results, fields) {
+					if (error) throw error;
+					client.emit('joined', gameID);
+				});
+			});
+		});
+	});
+
+	client.on('leave game', function (userID: number, gameID: number) {
+		connection.query('DELETE FROM usersgames WHERE UserID = ? AND GameID = ?', [userID, gameID], function (error, results, fields) {
+			if (error) throw error;
+			connection.query('UPDATE games SET playersCount = playersCount - 1 WHERE GameID = ?;', [gameID], function (error, results, fields) {
+				if (error) throw error;
+				client.emit('left', gameID);
+			});
+		});
+	});
+
+	client.on('delete game', function (userID: number, gameID: number) {
+		connection.query('DELETE FROM usersgames WHERE UserID = ? AND GameID = ?', [userID, gameID], function (error, results, fields) {
+			if (error) throw error;
+			connection.query('DELETE FROM games WHERE GameID = ?;', [gameID], function (error, results, fields) {
+				if (error) throw error;
+				client.emit('deleted', gameID);
 			});
 		});
 	});
 
 	client.on('load joinable games', function(userID: number) {
-		connection.query('SELECT games.GameID, UsersCount, (SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID) as PlayersCount FROM games LEFT JOIN usersgames ON games.GameID=usersgames.GameID AND usersgames.UserID = ? WHERE usersgames.GameID IS NULL',
-			[userID], function (error, results, fields) {
+		connection.query('SELECT games.GameID, UsersCount, PlayersCount FROM games WHERE PlayersCount < UsersCount', function (error, results, fields) {
 			if (error) throw error;
 			client.emit('load_games_results', results);
 		});
 	});
 
 	client.on('load my games', function(userID: number) {
-        connection.query('SELECT games.GameID, UsersCount FROM usersgames INNER JOIN games ON games.GameID=usersgames.GameID WHERE UserID = ? AND UsersCount=(SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID)', [userID], function (error, results, fields) {
+		connection.query('SELECT games.GameID, UsersCount FROM usersgames INNER JOIN games ON games.GameID=usersgames.GameID WHERE UserID = ? AND UsersCount=games.PlayersCount', [userID], function (error, results, fields) {
             if (error) throw error;
             client.emit('load_games_results', results);
         });

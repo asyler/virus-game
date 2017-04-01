@@ -42,6 +42,14 @@ module VirusGame {
                 game.state.restart(true, false, GameID);
             });
 
+            this.socket.on('left', function (GameID) {
+                game.state.restart(true, false, GameID);
+            });
+
+            this.socket.on('deleted', function (GameID) {
+                (<StateManager>game.state).back();
+            });
+
             this.socket.on('load_game_board', function (data) {
                 (<BoardGame>game.state.getCurrentState()).setBoardData(data);
             });
@@ -96,6 +104,14 @@ module VirusGame {
 
         join(GameID:number) {
             this.socket.emit('join game', this.user_id, GameID);
+        }
+
+        leave(GameID:number) {
+            this.socket.emit('leave game', this.user_id, GameID);
+        }
+
+        delete(GameID:number) {
+            this.socket.emit('delete game', this.user_id, GameID);
         }
 
         start_play(GameID:number) {

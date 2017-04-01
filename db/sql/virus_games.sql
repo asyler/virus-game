@@ -28,7 +28,7 @@ CREATE TABLE `games` (
   `PlayerTurn` int(11) DEFAULT NULL,
   `CellsLeft` int(11) DEFAULT NULL,
   `UsersCount` int(11) DEFAULT NULL,
-  `IsPlayed` tinyint(1) DEFAULT '0',
+  `PlayersCount` int(11) DEFAULT NULL,
   PRIMARY KEY (`GameID`),
   UNIQUE KEY `GameID_UNIQUE` (`GameID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -34,10 +34,18 @@ module VirusGame {
 
             let b_text;
             let b_callback;
-            if (this.players.length<this.info.UsersCount) {
+            if (this.info.PlayersCount<this.info.UsersCount) {
                 // need more players
-                b_text = R.strings['join'];
-                b_callback = this.join;
+                if (!this.clientAlreadyJoined()) {
+                    b_text = R.strings['join'];
+                    b_callback = this.join;
+                } else if (this.info.PlayersCount != 1) {                    
+                    b_text = R.strings['leave'];
+                    b_callback = this.leave;
+                } else {
+                    b_text = R.strings['delete'];
+                    b_callback = this.delete;
+                }
             } else {
                 // ready to play
                 b_text = R.strings['play'];
@@ -57,8 +65,20 @@ module VirusGame {
             this.done();
         }
 
+        clientAlreadyJoined() : boolean {
+            return this.players.some( (element, index, array) => element.UserID == client.user_id);
+        }
+
         join() {
             client.join(this.info.GameID);
+        }
+
+        leave() {
+            client.leave(this.info.GameID);
+        }
+
+        delete() {
+            client.delete(this.info.GameID);
         }
 
         play() {
