@@ -5,6 +5,8 @@ module VirusGame {
         private info_group: Phaser.Group;
         private players;
         private info;
+        private colorButtonGroup: Phaser.Group;
+
         _init(GameID) {
             this.id = GameID;
         }
@@ -16,6 +18,8 @@ module VirusGame {
                 (<StateManager>game.state).back();
             });
             back.width = back.height = 40;
+
+            this.load.atlasJSONHash('board_cells', 'assets/board_cells.png', 'assets/board_cells.json');
         }
 
         _create() {
@@ -39,6 +43,7 @@ module VirusGame {
                 if (!this.clientAlreadyJoined()) {
                     b_text = R.strings['join'];
                     b_callback = this.join;
+                    this.drawColorButtons();
                 } else if (this.info.PlayersCount != 1) {                    
                     b_text = R.strings['leave'];
                     b_callback = this.leave;
@@ -83,6 +88,15 @@ module VirusGame {
 
         play() {
             game.state.start('BoardGame', true, false, this.info.GameID);
+        }
+
+        drawColorButtons() {
+            this.colorButtonGroup = this.add.group();
+            BoardGame.colors.forEach(color => {
+               this.add.button(0,0,'board_cells',function() {},this,'grey_box',color+'_boxCheckmark','','',this.colorButtonGroup);
+            });
+            this.colorButtonGroup.alignIn(game.world.bounds, Phaser.BOTTOM_CENTER, 0, -200);;
+            this.colorButtonGroup.align(-1,1,40,40);
         }
 
     }
