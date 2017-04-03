@@ -23,7 +23,7 @@ connection.query('DROP DATABASE IF EXISTS '+config.database, function () {
     // create new one
     connection.query('CREATE DATABASE '+config.database, function () {
         // restore dump
-        let tables = ['users','games','usersgames','singlegames','statistics'];
+        let tables = ['users','games','usersgames','board_cells','statistics'];
         done = tables.length;
         tables.forEach(function (table, i) {
             exec("mysql -h "+config.host+" -u "+config.user+" -D "+config.database+" -p"+config.password+" < "+"db/sql/virus_"+table+".sql", function () {

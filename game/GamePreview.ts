@@ -28,26 +28,26 @@ module VirusGame {
             this.info_group = game.add.group();
             this.info_group.y = 100;
 
-            this.add.text(0,0,R.strings['game#']+this.info.GameID,R.fonts['white_1'], this.info_group);
-            this.add.text(0,0,R.strings['player_count']+':'+this.info.UsersCount,R.fonts['white_1'], this.info_group);
+            this.add.text(0,0,R.strings['game#']+this.id,R.fonts['white_1'], this.info_group);
+            this.add.text(0,0,R.strings['player_count']+':'+this.info['max_players'],R.fonts['white_1'], this.info_group);
 
             this.add.text(0,0,R.strings['players'],R.fonts['white_1'], this.info_group);
             this.players.forEach(function (player, i) {
-                this.add.text(0,0,player.UserName,R.fonts['player_name_1'](BoardGame.colors[player.PlayerColor]), this.info_group);
+                this.add.text(0,0,player['username'],R.fonts['player_name_1'](BoardGame.colors[player['player_color']]), this.info_group);
             }, this);
 
             this.info_group.align(1,-1,game.world.width,30,Phaser.CENTER);
 
             let b_text;
             let b_callback;
-            if (this.info.PlayersCount<this.info.UsersCount) {
+            if (this.info['players']<this.info['max_players']) {
                 // need more players
                 if (!this.clientAlreadyJoined()) {
                     b_text = R.strings['join'];
                     b_callback = this.join;
                     this.drawColorButtons();
                     this.setActiveColor(0);
-                } else if (this.info.PlayersCount != 1) {                    
+                } else if (this.info['players'] != 1) {
                     b_text = R.strings['leave'];
                     b_callback = this.leave;
                 } else {
@@ -74,23 +74,23 @@ module VirusGame {
         }
 
         clientAlreadyJoined() : boolean {
-            return this.players.some( (element, index, array) => element.UserID == client.user_id);
+            return this.players.some( (element, index, array) => element.user_id == client.user_id);
         }
 
         join() {
-            client.join(this.info.GameID, this.activeColor);
+            client.join(this.id, this.activeColor);
         }
 
         leave() {
-            client.leave(this.info.GameID);
+            client.leave(this.id);
         }
 
         delete() {
-            client.delete(this.info.GameID);
+            client.delete(this.id);
         }
 
         play() {
-            game.state.start('BoardGame', true, false, this.info.GameID);
+            game.state.start('BoardGame', true, false, this.id);
         }
 
         drawColorButtons() {

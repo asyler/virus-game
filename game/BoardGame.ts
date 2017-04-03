@@ -64,11 +64,11 @@ module VirusGame {
 
         private setBoardState() {
             for (let cell of this.board_state) {
-                this.board_cells[cell['X']][cell['Y']].setState(cell['State'],this.players_dict[cell['UserID']]);
-                this.players_dict[cell['UserID']].is_first_turn = false;
+                this.board_cells[cell['x']][cell['y']].setState(cell['state'],this.players_dict[cell['user_id']]);
+                this.players_dict[cell['user_id']].is_first_turn = false;
             }
-            this.current_player_number = this.game_info['PlayerTurn'];
-            this.left_turn_cells = this.game_info['CellsLeft'];
+            this.current_player_number = this.game_info['current_player'];
+            this.left_turn_cells = this.game_info['player_cells_left'];
 
             this.updateInfoPanel();
             this.updateActiveRegion();
@@ -115,8 +115,8 @@ module VirusGame {
             this.players = [];
             this.players_dict = {};
             for (let i in this.players_list) {
-                let user_id = this.players_list[i]['UserID'];
-                let player_color = BoardGame.colors[this.players_list[i]['PlayerColor']];
+                let user_id = this.players_list[i]['user_id'];
+                let player_color = BoardGame.colors[this.players_list[i]['player_color']];
                 let player = new BoardPlayer(user_id, player_color);
                 this.players.push(player);
                 this.players_dict[user_id] = player;
