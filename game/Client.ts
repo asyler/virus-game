@@ -102,8 +102,8 @@ module VirusGame {
             this.socket.emit('load game players', GameID);
         }
 
-        join(GameID:number) {
-            this.socket.emit('join game', this.user_id, GameID);
+        join(GameID:number, player_color:number) {
+            this.socket.emit('join game', this.user_id, GameID, player_color);
         }
 
         leave(GameID:number) {

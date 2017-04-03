@@ -93,17 +93,17 @@ sio.sockets.on('connection', function (client) {
 		connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount, playersCount) VALUES (now(), ?, ?, ?, ?)', [0, 1, usersCount, 1],
 		function (error, results, fields) {
 				if (error) throw error;
-                connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [ownerID, results.insertId, 0],
+                connection.query('INSERT INTO usersgames VALUES (?, ?, ?, ?)', [ownerID, results.insertId, 0, 0],
                     function (error, results, fields) {
                         if (error) throw error;
                     });
 			});
 	});
 	
-	client.on('join game', function(userID: number, gameID: number) {
+	client.on('join game', function(userID: number, gameID: number, playerColor: number) {
 		connection.query('SELECT MAX(userState) as state FROM usersgames WHERE GameID = ?;', [gameID], function (error, results, fields) {
 			if (error) throw error;
-			connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1], function (error, results, fields) {
+			connection.query('INSERT INTO usersgames VALUES (?, ?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1, playerColor], function (error, results, fields) {
 				if (error) throw error;
 				connection.query('UPDATE games SET playersCount = playersCount + 1 WHERE GameID = ?;', [gameID], function (error, results, fields) {
 					if (error) throw error;
@@ -155,7 +155,7 @@ sio.sockets.on('connection', function (client) {
     });
 
 	client.on('load game players', function (gameID: number) {
-		connection.query('SELECT users.UserID, UserName FROM usersgames INNER JOIN users ON usersgames.UserID = users.UserID WHERE GameID=? ORDER BY UserState ASC;', [gameID], function (error, results, fields) {
+		connection.query('SELECT users.UserID, UserName, PlayerColor FROM usersgames INNER JOIN users ON usersgames.UserID = users.UserID WHERE GameID=? ORDER BY UserState ASC;', [gameID], function (error, results, fields) {
 			if (error) throw error;
 			client.emit('load_game_players', results);
 		});

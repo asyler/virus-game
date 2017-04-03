@@ -26,6 +26,7 @@ CREATE TABLE `usersgames` (
   `UserID` int(11) unsigned NOT NULL,
   `GameID` int(10) unsigned NOT NULL,
   `UserState` varchar(45) DEFAULT NULL,
+  `PlayerColor` tinyint(1) DEFAULT NULL,
   KEY `UserID_idx` (`UserID`),
   KEY `GameID_idx` (`GameID`),
   CONSTRAINT `GameID` FOREIGN KEY (`GameID`) REFERENCES `games` (`GameID`) ON DELETE CASCADE ON UPDATE CASCADE,

@@ -116,7 +116,8 @@ module VirusGame {
             this.players_dict = {};
             for (let i in this.players_list) {
                 let user_id = this.players_list[i]['UserID'];
-                let player = new BoardPlayer(user_id, BoardGame.colors[i]);
+                let player_color = BoardGame.colors[this.players_list[i]['PlayerColor']];
+                let player = new BoardPlayer(user_id, player_color);
                 this.players.push(player);
                 this.players_dict[user_id] = player;
             }

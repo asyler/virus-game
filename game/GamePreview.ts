@@ -3,9 +3,11 @@ module VirusGame {
     export class GamePreview extends DBState {
         private id: number;
         private info_group: Phaser.Group;
+        private colorButtonGroup: Phaser.Group;
+        private activeColor: number;
+
         private players;
         private info;
-        private colorButtonGroup: Phaser.Group;
 
         _init(GameID) {
             this.id = GameID;
@@ -31,7 +33,7 @@ module VirusGame {
 
             this.add.text(0,0,R.strings['players'],R.fonts['white_1'], this.info_group);
             this.players.forEach(function (player, i) {
-                this.add.text(0,0,player.UserName,R.fonts['player_name_1'](BoardGame.colors[i]), this.info_group);
+                this.add.text(0,0,player.UserName,R.fonts['player_name_1'](BoardGame.colors[player.PlayerColor]), this.info_group);
             }, this);
 
             this.info_group.align(1,-1,game.world.width,30,Phaser.CENTER);
@@ -44,6 +46,7 @@ module VirusGame {
                     b_text = R.strings['join'];
                     b_callback = this.join;
                     this.drawColorButtons();
+                    this.setActiveColor(0);
                 } else if (this.info.PlayersCount != 1) {                    
                     b_text = R.strings['leave'];
                     b_callback = this.leave;
@@ -75,7 +78,7 @@ module VirusGame {
         }
 
         join() {
-            client.join(this.info.GameID);
+            client.join(this.info.GameID, this.activeColor);
         }
 
         leave() {
@@ -92,13 +95,21 @@ module VirusGame {
 
         drawColorButtons() {
             this.colorButtonGroup = this.add.group();
-            BoardGame.colors.forEach(color => {
-               this.add.button(0,0,'board_cells',function() {},this,'grey_box',color+'_boxCheckmark','','',this.colorButtonGroup);
-            });
+            BoardGame.colors.forEach(function(color, i) {
+                this.add.button(0,0,'board_cells', function() {
+                    this.setActiveColor(i);
+                }.bind(this),this,'grey_box',color+'_boxCheckmark','','',this.colorButtonGroup);
+            }, this);
             this.colorButtonGroup.alignIn(game.world.bounds, Phaser.BOTTOM_CENTER, 0, -200);;
             this.colorButtonGroup.align(-1,1,40,40);
         }
 
+        setActiveColor(i:number) {
+            if (this.activeColor !=null)
+                (<Phaser.Button>this.colorButtonGroup.getAt(this.activeColor)).tint = 0xffffff;
+            this.activeColor = i;
+            (<Phaser.Button>this.colorButtonGroup.getAt(i)).tint = 0xaaaaaa;
+        }
     }
 
 }
