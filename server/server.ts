@@ -155,7 +155,7 @@ sio.sockets.on('connection', function (client) {
     });
 
 	client.on('load game players', function (gameID: number) {
-		connection.query('SELECT users_games.user_id, users.username, users_games.player_color FROM users_games INNER JOIN users ON users_games.user_id = users.id WHERE game_id=? ORDER BY player_state ASC;', [gameID], function (error, results, fields) {
+		connection.query('SELECT users_games.user_id, users.username, users_games.player_color, users_games.player_state, users_games.is_alive FROM users_games INNER JOIN users ON users_games.user_id = users.id WHERE game_id=? ORDER BY player_state ASC;', [gameID], function (error, results, fields) {
 			if (error) throw error;
 			client.emit('load_game_players', results);
 		});
@@ -168,28 +168,32 @@ sio.sockets.on('connection', function (client) {
 			client.emit('load_game_board', results);
 		});
 	});
+
+	client.on('player defeated', function (game_id: number, player_id: number) {
+		connection.query('UPDATE users SET losses = losses + 1 WHERE id = ?', [player_id], function (error, results, fields) {
+			if (error) throw error;
+		});
+		connection.query('UPDATE users_games SET is_alive = 0 WHERE game_id = ? and user_id = ?', [game_id,player_id], function (error, results, fields) {
+			if (error) throw error;
+		});
+	})
 	
-	// как определять выигравшего из 3х? 
 	client.on('finish game', function(gameID: number, winnerID: number) {
-        connection.query('INSERT INTO pvp_statistics (user1, user2, user1_wins) VALUES (?, (SELECT user_id FROM users_games WHERE game_id = ? AND user_id IS NOT ?), ?) ' +
-						 'ON DUPLICATE KEY user1_wins = user1_wins + 1;', [winnerID, gameID, winnerID, 1], function (error, results, fields) {
+        connection.query('INSERT INTO pvp_statistics (user1, user2, user1_wins) SELECT ?, user_id, 1 FROM users_games WHERE game_id = ? AND user_id != ? ' +
+						 'ON DUPLICATE KEY UPDATE user1_wins = user1_wins + 1', [winnerID, gameID, winnerID], function (error, results, fields) {
 			if (error) throw error;
+			connection.query('DELETE FROM games WHERE id = ?', [gameID],
+				function (error, results, fields) {
+					if (error) throw error;
+				});
 		});
-		connection.query('UPDATE users SET wins = wins + 1 WHERE id = ?'[winnerID], function (error, results, fields) {
-			if (error) throw error;
-		});
-		
-		connection.query('UPDATE users SET losses = losses + 1 WHERE id IS NOT ?', [winnerID], function (error, results, fields) {
-			if (error) throw error;
-		});
-		connection.query('DELETE FROM board_cells WHERE id = ?; DELETE FROM users_games WHERE game_id = ?; DELETE FROM games WHERE id = ?', [gameID, gameID, gameID],
-		function (error, results, fields) {
+		connection.query('UPDATE users SET wins = wins + 1 WHERE id = ?', [winnerID], function (error, results, fields) {
 			if (error) throw error;
 		});
     });
 
-    client.on('player move', function(userID, gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
-        connection.query('INSERT INTO board_cells (id,x,y,state,user_id) VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, userID], function (error, results, fields) {
+    client.on('player move', function(userID, gameID, row, col, state, cellsLeft, currentPlayer, playerMoved, usersLost) {
+        connection.query('INSERT INTO board_cells (id,x,y,state,player) VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, playerMoved], function (error, results, fields) {
             if (error) throw error;
         });
 		connection.query('UPDATE games SET current_player=?, player_cells_left=?, players=players-? WHERE id=?;', [currentPlayer, cellsLeft, usersLost, gameID],

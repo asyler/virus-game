@@ -43,7 +43,7 @@ module VirusGame {
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
                         if (!opponentTurn)
-                            client.player_move(this.board_game.id,this.row,this.col,1,this.board_game.left_turn_cells,this.board_game.current_player_number,0);
+                            client.player_move(this.board_game.id,this.row,this.col,1,this.board_game.left_turn_cells,this.board_game.current_player_number,this.player.state,0);
                         break;
                     case CellState.Alive:
                         this.frameName = this.board_game.current_player_color + '_boxCheckmark';
@@ -51,7 +51,7 @@ module VirusGame {
                         this.player = this.board_game.current_player;
                         this.board_game.endTurn();
                         if (!opponentTurn)
-                            client.player_move(this.board_game.id,this.row,this.col,2,this.board_game.left_turn_cells,this.board_game.current_player_number,0);
+                            client.player_move(this.board_game.id,this.row,this.col,2,this.board_game.left_turn_cells,this.board_game.current_player_number,this.player.state,0);
                         break;
                     case CellState.Dead:
                         break;

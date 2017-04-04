@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UsersID_UNIQUE` (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `games` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -18,13 +18,14 @@ CREATE TABLE IF NOT EXISTS `games` (
   `players` int(11) DEFAULT NULL COMMENT 'Number of players have already joined game',
   PRIMARY KEY (`id`),
   UNIQUE KEY `GameID_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COMMENT='Games list';
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8 COMMENT='Games list';
 
 CREATE TABLE IF NOT EXISTS `users_games` (
   `user_id` int(11) unsigned NOT NULL,
   `game_id` int(10) unsigned NOT NULL,
-  `player_state` varchar(45) DEFAULT NULL COMMENT '* I believe it should be correct *\nIf >= 0: player turn order\nIf  = -1: player have already lose this game',
+  `player_state` varchar(45) DEFAULT NULL COMMENT 'Player turn order',
   `player_color` tinyint(1) DEFAULT NULL,
+  `is_alive` tinyint(255) NOT NULL DEFAULT '1',
   KEY `UserID_idx` (`user_id`),
   KEY `GameID_idx` (`game_id`),
   CONSTRAINT `GameID` FOREIGN KEY (`game_id`) REFERENCES `games` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -36,13 +37,12 @@ CREATE TABLE IF NOT EXISTS `board_cells` (
   `x` int(11) DEFAULT NULL,
   `y` int(11) DEFAULT NULL,
   `state` int(11) DEFAULT NULL COMMENT 'Cell state:\n	1 - alive cell\n	2 - dead cell',
-  `user_id` int(10) unsigned DEFAULT NULL COMMENT 'Cell owner',
+  `player` int(10) unsigned DEFAULT NULL COMMENT 'Cell owner. Not user id, but value from player_state',
   UNIQUE KEY `Unique_cell` (`id`,`x`,`y`,`state`),
-  KEY `UserID_idx` (`user_id`),
+  KEY `UserID_idx` (`player`),
   KEY `GameID_indx` (`id`),
-  KEY `UserID_indx` (`user_id`),
-  CONSTRAINT `GameIDConstraint` FOREIGN KEY (`id`) REFERENCES `games` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `UserIDConstraint` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `UserID_indx` (`player`),
+  CONSTRAINT `GameIDConstraint` FOREIGN KEY (`id`) REFERENCES `games` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Cells in games';
 
 CREATE TABLE IF NOT EXISTS `pvp_statistics` (

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="4">
+
+  <testsuite name="create_game"
+    errors="0" failures="0" hostname="" id="" package="create_game" skipped="0"
+    tests="4" time="2.645" timestamp="Tue, 04 Apr 2017 17:55:41 GMT">
+  
+    <testcase name="Phaser Game Boots Test" time="1.486" assertions="1">
+
+    
+    </testcase>
+  
+    <testcase name="Phaser Game Loads Test" time="0.5700" assertions="4">
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Login Test" time="0.5610" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Create Game Test" time="0.02800" assertions="1">
+
+    
+    </testcase>
+  
+  
+  </testsuite>
+</testsuites>

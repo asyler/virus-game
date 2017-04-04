@@ -64,12 +64,12 @@ module VirusGame {
         }
 
         // send to server
-        host_game() {
-            this.socket.emit('host game', this.user_id, 2);
+        host_game(max_players: number) {
+            this.socket.emit('host game', this.user_id, max_players);
         }
 
-        player_move(gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
-            this.socket.emit('player move', this.user_id, gameID, row, col, state, cellsLeft, currentPlayer, usersLost);
+        player_move(gameID, row, col, state, cellsLeft, currentPlayer, playerMoved, usersLost) {
+            this.socket.emit('player move', this.user_id, gameID, row, col, state, cellsLeft, currentPlayer, playerMoved, usersLost);
 
         }
 
@@ -118,6 +118,18 @@ module VirusGame {
             this.socket.emit('load game players', GameID);
             this.socket.emit('load game info', GameID);
             this.socket.emit('load game board', GameID);
+        }
+
+        player_defeated(game_id: number, player_id: number) {
+            if (this.user_id==player_id)
+                // let only defeated player fire this event
+                this.socket.emit('player defeated', game_id, player_id);
+        }
+
+        game_over(game_id: number, winner_id: number) {
+            if (this.user_id==winner_id)
+            // let only winner player fire this event
+                this.socket.emit('finish game', game_id, winner_id);
         }
     }
 }

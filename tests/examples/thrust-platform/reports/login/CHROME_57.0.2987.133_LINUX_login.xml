@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="3">
+
+  <testsuite name="login"
+    errors="0" failures="0" hostname="" id="" package="login" skipped="0"
+    tests="3" time="1.803" timestamp="Mon, 03 Apr 2017 11:21:14 GMT">
+  
+    <testcase name="Phaser Game Boots Test" time="0.7300" assertions="1">
+
+    
+    </testcase>
+  
+    <testcase name="Phaser Game Loads Test" time="0.5360" assertions="4">
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Login Test" time="0.5370" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+  
+  </testsuite>
+</testsuites>
