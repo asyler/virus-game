@@ -12,7 +12,7 @@ module VirusGame {
         players: Array<BoardPlayer>;
         infoPanel: InfoPanel;
 
-        static colors: Array<string> = ['blue', 'yellow'];
+        static colors: Array<string> = ['red','blue', 'yellow','green','black','purple'];
         id: number;
         private board_state;
         private board_cells;

@@ -100,8 +100,8 @@ module VirusGame {
                     this.setActiveColor(i);
                 }.bind(this),this,'grey_box',color+'_boxCheckmark','','',this.colorButtonGroup);
             }, this);
-            this.colorButtonGroup.alignIn(game.world.bounds, Phaser.BOTTOM_CENTER, 0, -200);;
             this.colorButtonGroup.align(-1,1,40,40);
+            this.colorButtonGroup.alignIn(game.world.bounds, Phaser.BOTTOM_CENTER, 0, -200);
         }
 
         setActiveColor(i:number) {
