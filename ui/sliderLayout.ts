@@ -62,12 +62,12 @@ module UIPlugin {
             let slider = _game.add.group(this);
             slider.x = config.slider_position[0];
             slider.y = config.slider_position[1];
-            let slider_bg = _game.add.image(0, 0, config.parent.sprite, 'elements/scrolling/way', slider);
-            let b_up = objectFactory.button(0, 0, config.parent.sprite, this.slide_down, this, 'elements/scrolling/arrow/up_', slider);
-            let b_down = objectFactory.button(0, bg.height - b_up.height, config.parent.sprite, this.slide_up, this, 'elements/scrolling/arrow/down_', slider);
+            let slider_bg = _game.add.image(0, 0, config.parent.sprite, 'way', slider);
+            let b_up = objectFactory.button(0, 0, config.parent.sprite, this.slide_down, this, 'arrow/up_', slider);
+            let b_down = objectFactory.button(0, bg.height - b_up.height, config.parent.sprite, this.slide_up, this, 'arrow/down_', slider);
             slider_bg.crop(new Phaser.Rectangle(0, 0, slider_bg.width, bg.height - b_up.height));
             slider_bg.alignTo(b_up, Phaser.BOTTOM_CENTER, 0, -b_up.height / 2 | 0);
-            let _slider = objectFactory.slider(0, 0, config.parent.sprite, 'elements/scrolling/scrolling/normal', slider);
+            let _slider = objectFactory.slider(0, 0, config.parent.sprite, 'scrolling/normal', slider);
             _slider.inputEnabled = true;
             _slider.input.enableDrag();
             _slider.min_y = b_up.y + b_up.height;
@@ -79,17 +79,17 @@ module UIPlugin {
             _slider.input.useHandCursor = true;
             _slider.events.onInputOver.add(function () {
                 // game.cursor.frame = 2;
-                _slider.frameName = 'elements/scrolling/scrolling/hover';
+                _slider.frameName = 'scrolling/hover';
             }, this);
             _slider.events.onInputOut.add(function () {
                 // game.cursor.frame = 1;
-                _slider.frameName = 'elements/scrolling/scrolling/normal';
+                _slider.frameName = 'scrolling/normal';
             }, this);
             _slider.events.onInputDown.add(function () {
-                _slider.frameName = 'elements/scrolling/scrolling/click';
+                _slider.frameName = 'scrolling/click';
             }, this);
             _slider.events.onInputUp.add(function () {
-                _slider.frameName = 'elements/scrolling/scrolling/hover';
+                _slider.frameName = 'scrolling/hover';
             }, this);
             _slider.events.onDragUpdate.add(function (img) {
                 let pos = (img.y - img.min_y) / img.max_abs_y;

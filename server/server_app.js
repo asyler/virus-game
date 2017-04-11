@@ -29,7 +29,14 @@ let basepath = path.resolve(__dirname + '/../');
 let bcrypt = require('bcrypt');
 const saltRounds = 10;
 let mysql = require('mysql');
-let connection = mysql.createConnection(process.env.JAWSDB_URL);
+let config = require('../server/config.json');
+let connection = mysql.createConnection(process.env.JAWSDB_URL ||
+    {
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database
+    });
 connection.connect();
 let clients = {};
 server.listen(gameport);
@@ -50,7 +57,7 @@ sio.sockets.on('connection', function (client) {
     clients[client.userid] = client;
     client.emit('onConnected', { id: client.userid });
     client.on('user login', function (userName, password) {
-        connection.query('SELECT UserID as id, password FROM users WHERE UserName = ?', [userName], function (error, results, fields) {
+        connection.query('SELECT id, password FROM users WHERE username = ?', [userName], function (error, results, fields) {
             if (error)
                 throw error;
             if (results.length > 0)
@@ -61,64 +68,99 @@ sio.sockets.on('connection', function (client) {
         });
     });
     client.on('user register', function (userName, password) {
-        bcrypt.genSalt(saltRounds, function (err, salt) {
-            bcrypt.hash(password, salt, function (err, hash) {
-                connection.query('INSERT INTO users (UserName, Password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
+        connection.query('SELECT id FROM virus.users WHERE username = ?;', [userName], function (error, results, fields) {
+            if (error)
+                throw error;
+            if (results.length != 0) {
+            }
+            else {
+                bcrypt.genSalt(saltRounds, function (err, salt) {
+                    bcrypt.hash(password, salt, function (err, hash) {
+                        connection.query('INSERT INTO users (username, password) VALUES (?, ?);', [userName, hash], function (error, results, fields) {
+                            if (error)
+                                throw error;
+                            connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
+                                if (error)
+                                    throw error;
+                                client.emit('user_register_results', results);
+                            });
+                        });
+                    });
+                });
+            }
+            ;
+        });
+    });
+    client.on('host game', function (owner_id, max_players) {
+        connection.query('INSERT INTO games (created, current_player, player_cells_left, max_players, players) VALUES (NOW(), ?, ?, ?, ?)', [0, 1, max_players, 1], function (error, results, fields) {
+            if (error)
+                throw error;
+            connection.query('INSERT INTO users_games (user_id, game_id, player_state, player_color) VALUES (?, ?, ?, ?)', [owner_id, results.insertId, 0, 0], function (error, results, fields) {
+                if (error)
+                    throw error;
+            });
+        });
+    });
+    client.on('join game', function (userID, gameID, playerColor) {
+        connection.query('SELECT MAX(player_state) as state FROM users_games WHERE game_id = ?;', [gameID], function (error, results, fields) {
+            if (error)
+                throw error;
+            connection.query('INSERT INTO users_games (user_id, game_id, player_state, player_color) VALUES (?, ?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1, playerColor], function (error, results, fields) {
+                if (error)
+                    throw error;
+                connection.query('UPDATE games SET players = players + 1 WHERE id = ?;', [gameID], function (error, results, fields) {
                     if (error)
                         throw error;
-                    connection.query('SELECT LAST_INSERT_ID() as id FROM users;', function (error, results, fields) {
-                        if (error)
-                            throw error;
-                        client.emit('user_register_results', results);
-                    });
+                    client.emit('joined', gameID);
                 });
             });
         });
     });
-    client.on('host game', function (ownerID, usersCount) {
-        connection.query('INSERT INTO games (creationTime, playerTurn, cellsLeft, usersCount) VALUES (now(), ?, ?, ?)', [0, 1, usersCount], function (error, results, fields) {
+    client.on('leave game', function (userID, gameID) {
+        connection.query('DELETE FROM users_games WHERE user_id = ? AND game_id = ?', [userID, gameID], function (error, results, fields) {
             if (error)
                 throw error;
-            connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [ownerID, results.insertId, 0], function (error, results, fields) {
+            connection.query('UPDATE games SET players = players - 1 WHERE id = ?;', [gameID], function (error, results, fields) {
                 if (error)
                     throw error;
+                client.emit('left', gameID);
             });
         });
     });
-    client.on('join game', function (userID, gameID) {
-        connection.query('SELECT MAX(userState) as state FROM usersgames WHERE GameID = ?;', [gameID], function (error, results, fields) {
+    client.on('delete game', function (userID, gameID) {
+        connection.query('DELETE FROM users_games WHERE user_id = ? AND game_id = ?', [userID, gameID], function (error, results, fields) {
             if (error)
                 throw error;
-            connection.query('INSERT INTO usersgames VALUES (?, ?, ?)', [userID, gameID, parseInt(results[0].state) + 1], function (error, results, fields) {
+            connection.query('DELETE FROM games WHERE id = ?;', [gameID], function (error, results, fields) {
                 if (error)
                     throw error;
-                client.emit('joined', gameID);
+                client.emit('deleted', gameID);
             });
         });
     });
     client.on('load joinable games', function (userID) {
-        connection.query('SELECT games.GameID, UsersCount, (SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID) as PlayersCount FROM games LEFT JOIN usersgames ON games.GameID=usersgames.GameID AND usersgames.UserID = ? WHERE usersgames.GameID IS NULL', [userID], function (error, results, fields) {
+        connection.query('SELECT games.id, max_players, players FROM games WHERE players < max_players', function (error, results, fields) {
             if (error)
                 throw error;
             client.emit('load_games_results', results);
         });
     });
     client.on('load my games', function (userID) {
-        connection.query('SELECT games.GameID, UsersCount FROM usersgames INNER JOIN games ON games.GameID=usersgames.GameID WHERE UserID = ? AND UsersCount=(SELECT COUNT(*) FROM usersgames WHERE GameID = games.GameID)', [userID], function (error, results, fields) {
+        connection.query('SELECT games.id, games.max_players FROM users_games INNER JOIN games ON games.id=users_games.game_id WHERE user_id = ? AND games.max_players=games.players', [userID], function (error, results, fields) {
             if (error)
                 throw error;
             client.emit('load_games_results', results);
         });
     });
     client.on('load game info', function (gameID) {
-        connection.query('SELECT * FROM games WHERE GameID = ?;', [gameID], function (error, results, fields) {
+        connection.query('SELECT * FROM games WHERE id = ?;', [gameID], function (error, results, fields) {
             if (error)
                 throw error;
             client.emit('load_game_info', results[0]);
         });
     });
     client.on('load game players', function (gameID) {
-        connection.query('SELECT users.UserID, UserName FROM usersgames INNER JOIN users ON usersgames.UserID = users.UserID WHERE GameID=? ORDER BY UserState ASC;', [gameID], function (error, results, fields) {
+        connection.query('SELECT users_games.user_id, users.username, users_games.player_color, users_games.player_state, users_games.is_alive FROM users_games INNER JOIN users ON users_games.user_id = users.id WHERE game_id=? ORDER BY player_state ASC;', [gameID], function (error, results, fields) {
             if (error)
                 throw error;
             client.emit('load_game_players', results);
@@ -126,29 +168,43 @@ sio.sockets.on('connection', function (client) {
     });
     client.on('load game board', function (gameID) {
         client.join('game#' + gameID);
-        connection.query('SELECT * FROM singlegames WHERE GameID=?', [gameID], function (error, results, fields) {
+        connection.query('SELECT * FROM board_cells WHERE id=?', [gameID], function (error, results, fields) {
             if (error)
                 throw error;
             client.emit('load_game_board', results);
         });
     });
-    client.on('finish game', function (gameID, winnerID) {
-        connection.query('INSERT INTO statistics (user1, user2, user1winuser2count) VALUES (?, (SELECT UserID FROM usersgames WHERE GameID = ? AND UserID IS NOT ?), ?) ' +
-            'ON DUPLICATE KEY user1winuser2count = user1winuser2count + 1;', [winnerID, gameID, winnerID, 1], function (error, results, fields) {
+    client.on('player defeated', function (game_id, player_id) {
+        connection.query('UPDATE users SET losses = losses + 1 WHERE id = ?', [player_id], function (error, results, fields) {
             if (error)
                 throw error;
         });
-        connection.query('DELETE FROM singleGames WHERE GameID = ?; DELETE FROM usersGames WHERE gameID = ?; DELETE FROM games WHERE gameID = ?', [gameID, gameID, gameID], function (error, results, fields) {
+        connection.query('UPDATE users_games SET is_alive = 0 WHERE game_id = ? and user_id = ?', [game_id, player_id], function (error, results, fields) {
             if (error)
                 throw error;
         });
     });
-    client.on('player move', function (userID, gameID, row, col, state, cellsLeft, currentPlayer, usersLost) {
-        connection.query('INSERT INTO singlegames VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, userID], function (error, results, fields) {
+    client.on('finish game', function (gameID, winnerID) {
+        connection.query('INSERT INTO pvp_statistics (user1, user2, user1_wins) SELECT ?, user_id, 1 FROM users_games WHERE game_id = ? AND user_id != ? ' +
+            'ON DUPLICATE KEY UPDATE user1_wins = user1_wins + 1', [winnerID, gameID, winnerID], function (error, results, fields) {
+            if (error)
+                throw error;
+            connection.query('DELETE FROM games WHERE id = ?', [gameID], function (error, results, fields) {
+                if (error)
+                    throw error;
+            });
+        });
+        connection.query('UPDATE users SET wins = wins + 1 WHERE id = ?', [winnerID], function (error, results, fields) {
             if (error)
                 throw error;
         });
-        connection.query('UPDATE games SET playerTurn=?, cellsLeft=?, usersCount=usersCount-? WHERE GameID=?;', [currentPlayer, cellsLeft, usersLost, gameID], function (error, results, fields) {
+    });
+    client.on('player move', function (userID, gameID, row, col, state, cellsLeft, currentPlayer, playerMoved, usersLost) {
+        connection.query('INSERT INTO board_cells (id,x,y,state,player) VALUES (?, ?, ?, ?, ?)', [gameID, row, col, state, playerMoved], function (error, results, fields) {
+            if (error)
+                throw error;
+        });
+        connection.query('UPDATE games SET current_player=?, player_cells_left=?, players=players-? WHERE id=?;', [currentPlayer, cellsLeft, usersLost, gameID], function (error, results, fields) {
             if (error)
                 throw error;
         });

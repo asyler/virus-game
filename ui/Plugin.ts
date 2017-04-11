@@ -18,8 +18,8 @@ module UIPlugin {
             return new UIPlugin.Button(_game, x, y, sprite, func, context, base_path, parent, button_group);
         }
 
-        text_button(x:number, y:number, callback:(b?) => any, scope, text:string, font, parent?): UIPlugin.TextButton {
-            return new UIPlugin.TextButton(_game, x, y, callback, scope, text, font, parent);
+        text_button(x:number, y:number, callback:(b?) => any, scope, text:string, font, parent?, frames?): UIPlugin.TextButton {
+            return new UIPlugin.TextButton(_game, x, y, callback, scope, text, font, parent, frames);
         }
 
         slider(x: number, y: number, key?: any, frame?: any, group?: Phaser.Group): UIPlugin.Slider {

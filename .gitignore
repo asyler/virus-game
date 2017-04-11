@@ -4,3 +4,8 @@ game/*.js.map
 www/js/*.js.map
 node_modules/*
 .vscode/*
+server/*.js.map
+server/config.json
+server/server/*
+npm-debug.log
+/db/seed.json
