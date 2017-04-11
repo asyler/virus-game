@@ -1,52 +1,116 @@
-{"frames": {
+{"frames": [
 
-"blue_boxCheckmark":
 {
+	"filename": "black_boxCheckmark",
 	"frame": {"x":0,"y":0,"w":40,"h":40},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
 	"sourceSize": {"w":40,"h":40}
 },
-"blue_boxCross":
 {
+	"filename": "black_boxCross",
 	"frame": {"x":40,"y":0,"w":40,"h":40},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
 	"sourceSize": {"w":40,"h":40}
 },
-"grey_box":
 {
+	"filename": "blue_boxCheckmark",
 	"frame": {"x":80,"y":0,"w":40,"h":40},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
 	"sourceSize": {"w":40,"h":40}
 },
-"yellow_boxCheckmark":
 {
-	"frame": {"x":120,"y":0,"w":40,"h":40},
+	"filename": "blue_boxCross",
+	"frame": {"x":0,"y":40,"w":40,"h":40},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
 	"sourceSize": {"w":40,"h":40}
 },
-"yellow_boxCross":
 {
-	"frame": {"x":160,"y":0,"w":40,"h":40},
+	"filename": "green_boxCheckmark",
+	"frame": {"x":40,"y":40,"w":40,"h":40},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
 	"sourceSize": {"w":40,"h":40}
-}},
+},
+{
+	"filename": "green_boxCross",
+	"frame": {"x":80,"y":40,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "grey_box",
+	"frame": {"x":0,"y":80,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "purple_boxCheckmark",
+	"frame": {"x":40,"y":80,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "purple_boxCross",
+	"frame": {"x":80,"y":80,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "red_boxCheckmark",
+	"frame": {"x":0,"y":120,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "red_boxCross",
+	"frame": {"x":40,"y":120,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "yellow_boxCheckmark",
+	"frame": {"x":80,"y":120,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+},
+{
+	"filename": "yellow_boxCross",
+	"frame": {"x":0,"y":160,"w":40,"h":40},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":40},
+	"sourceSize": {"w":40,"h":40}
+}],
 "meta": {
 	"app": "http://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "board_cells.png",
 	"format": "RGBA8888",
-	"size": {"w":200,"h":40},
+	"size": {"w":120,"h":200},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:cf373187f5a9fb675faadf5ca51595bc:23cee5fb25304f539d9d8b98fe860210:edd89bcf626b2476a80cc2cb1f54a73b$"
+	"smartupdate": "$TexturePacker:SmartUpdate:c5ecb0c5cb227b8239b412d30b112df5:9dd3467d52218e79a66728abf123db70:edd89bcf626b2476a80cc2cb1f54a73b$"
 }
 }

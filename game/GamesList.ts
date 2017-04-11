@@ -47,11 +47,11 @@ module VirusGame {
         }
 
         show_game(item, data, cell) {
-            let gameInfo = R.strings['game#']+data.GameID;
+            let gameInfo = R.strings['game#']+data.id;
             if (data.PlayersCount)
-                gameInfo += ' ('+data.PlayersCount+'/'+data.UsersCount+')';
+                gameInfo += ' ('+data.players+'/'+data.max_players+')';
             let button = ui.add.text_button(0, 0, this.open_game, this, gameInfo, R.fonts['white_1'], item);
-            button.button.data.id = data.GameID;
+            button.button.data.id = data.id;
         }
 
         open_game(b) {

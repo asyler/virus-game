@@ -24,7 +24,7 @@ module VirusGame {
         }
 
         createGame() {
-            client.host_game();
+            this.game.state.start('CreateGame', true, false);
         }
         joinGame() {
             this.game.state.start('GamesList', true, false, 'join');

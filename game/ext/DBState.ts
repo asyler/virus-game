@@ -2,6 +2,17 @@
  * Created by asyler on 06.03.17.
  */
 
+/*
+Use this class if you need to populate this state with some data,
+which should be loaded from database.
+
+Use _init() instead of init() to populate state with initial static data.
+Use _start() instead of start().
+Then, in preload() call wait(n) to tell state to wait for n events before execute start().
+After each event handled use done() to tell state that 1 event is resolved.
+ */
+
+
 class DBState extends Phaser.State {
     wait_for_callbacks: number;
     callbacks_returned: number;

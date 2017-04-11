@@ -1,18 +1,18 @@
 module VirusGame {
     export class BoardGame extends DBState {
 
-        number_of_players: number = 2;
+        number_of_players: number;
         current_player_number: number;
         left_turn_cells: number;
         activeCells: Array<number> = [];
         possibleMoves: Array<number> = [];
 
         board: Phaser.Group;
+        active_players: Array<number>;
         players: Array<BoardPlayer>;
-        players_dict: { [id: string] : BoardPlayer };
         infoPanel: InfoPanel;
 
-        static colors: Array<string> = ['blue', 'yellow'];
+        static colors: Array<string> = ['red','blue', 'yellow','green','black','purple'];
         id: number;
         private board_state;
         private board_cells;
@@ -40,6 +40,7 @@ module VirusGame {
 
         setPlayers(data) {
             this.players_list = data;
+            this.number_of_players = data.length;
             this.done();
         }
 
@@ -64,15 +65,24 @@ module VirusGame {
 
         private setBoardState() {
             for (let cell of this.board_state) {
-                this.board_cells[cell['X']][cell['Y']].setState(cell['State'],this.players_dict[cell['UserID']]);
-                this.players_dict[cell['UserID']].is_first_turn = false;
+                this.board_cells[cell['x']][cell['y']].setState(cell['state'],this.players[cell['player']]);
+                this.players[cell['player']].is_first_turn = false;
             }
-            this.current_player_number = this.game_info['PlayerTurn'];
-            this.left_turn_cells = this.game_info['CellsLeft'];
+            this.current_player_number = this.game_info['current_player'];
+            this.left_turn_cells = this.game_info['player_cells_left'];
+
+            this.active_players = [];
+            for (let i in this.players) {
+                let player = this.players[i];
+                if (player.is_alive) {
+                    this.active_players.push(player.state);
+                }
+            }
+            this.number_of_players = this.active_players.length;
 
             this.updateInfoPanel();
             this.updateActiveRegion();
-            this.updatePossibleMoves();
+            this.updatePossibleMoves(true);
         }
 
         private drawBoard() {
@@ -113,12 +123,16 @@ module VirusGame {
 
         private addPlayers() {
             this.players = [];
-            this.players_dict = {};
+            this.active_players = [];
             for (let i in this.players_list) {
-                let user_id = this.players_list[i]['UserID'];
-                let player = new BoardPlayer(user_id, BoardGame.colors[i]);
-                this.players.push(player);
-                this.players_dict[user_id] = player;
+                let player_data = this.players_list[i];
+                let user_id = player_data['user_id'];
+                let is_alive = player_data['is_alive'];
+                let player_number = parseInt(player_data['player_state']);
+                let player_color = BoardGame.colors[player_data['player_color']];
+                let player = new BoardPlayer(user_id, player_color, player_number, is_alive);
+                this.active_players.push(player_number);
+                this.players[player_number] = player;
             }
         }
 
@@ -152,7 +166,7 @@ module VirusGame {
 
                 this.activeCells = [];
 
-                this.current_player_number = (this.current_player_number + 1) % this.number_of_players;
+                this.current_player_number = this.active_players[(this.active_players.indexOf(this.current_player_number)+ 1) % this.number_of_players];
 
                 if (this.current_player.is_first_turn)
                     this.left_turn_cells = 1;
@@ -247,7 +261,7 @@ module VirusGame {
             }
         }
 
-        private updatePossibleMoves() {
+        private updatePossibleMoves(initial: boolean = false) {
             this.possibleMoves = [];
             for (let cell of this.board.children) {
                 (<BoardCell>cell).disablePossibleToMoveTo();
@@ -275,7 +289,26 @@ module VirusGame {
             }
 
             if (this.possibleMoves.length == 0 && !this.current_player.is_first_turn) {
+                // game over
                 this.infoPanel.gameOver(this.current_player);
+                if (initial)
+                    return;
+                client.player_defeated(this.id,this.current_player.id);
+
+                // handle with defeated player
+                if (this.number_of_players>2) {// continue to play
+                    let defeated_player = this.active_players.indexOf(this.current_player_number);
+                    // hmm.. small workaround ;)
+                    this.left_turn_cells = 1;
+                    this.endTurn();
+                    // remove defeated player
+                    this.number_of_players -= 1;
+                    this.active_players.splice(defeated_player, 1);
+                } else {
+                    let defeated_player = this.active_players.indexOf(this.current_player_number);
+                    this.active_players.splice(defeated_player, 1); // only winner should left
+                    client.game_over(this.id,this.players[this.active_players[0]].id);
+                }
             }
         }
 
