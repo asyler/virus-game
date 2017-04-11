@@ -15,8 +15,9 @@ const saltRounds = 10;
 
 let mysql      = require('mysql');
 let connection;
-if (process.env.JAWSDB_URL)
+if (process.env.JAWSDB_URL) {
 	connection = mysql.createConnection(process.env.JAWSDB_URL);
+}
 else {
 	let config = require('../server/config.json');
 	connection = mysql.createConnection(
@@ -76,7 +77,7 @@ sio.sockets.on('connection', function (client) {
 	});
 
 	client.on('user register', function (userName, password) {
-		connection.query('SELECT id FROM virus.users WHERE username = ?;', [userName], function (error, results, fields) {
+		connection.query('SELECT id FROM users WHERE username = ?;', [userName], function (error, results, fields) {
 			if (error) throw error;
 			if (results.length != 0) {
 				// TODO: Add "User already exists" message
